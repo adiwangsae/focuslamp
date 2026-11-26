@@ -1,0 +1,1667 @@
+FOCUSLAMP — MASTER IMPLEMENTATION PROMPT
+
+Complete Website Development Specification
+
+---
+
+1. ROLE AND EXECUTION DIRECTIVE
+
+Act as a Senior Full-Stack Developer, Product Designer, UI/UX Designer, and Software Architect.
+
+Your task is to directly develop and improve the existing FocusLamp website project based on this specification.
+
+This is an implementation task, not a planning, explanation, or prompt-generation task.
+
+You must:
+
+- Inspect the existing project before making changes.
+- Continue developing the existing project rather than creating a new one.
+- Preserve functional and reusable components.
+- Improve existing implementations that do not meet this specification.
+- Build missing pages, components, interactions, and responsive behaviors.
+- Maintain consistent architecture, design language, and application state.
+- Test the implementation after completing each major feature.
+- Do not produce static mockup screens when functional interactions are expected.
+
+Do not merely describe what should be implemented. Make the actual code changes.
+
+If a technical requirement cannot be implemented in the current environment, explain the limitation and provide the closest functional alternative without pretending it is complete.
+
+---
+
+2. PRODUCT OVERVIEW
+
+Product Name: FocusLamp
+
+FocusLamp is an IoT-based smart study lamp designed to help students build better study habits, reduce digital distractions, and understand their focus patterns.
+
+The product combines:
+
+- Smart study lamp and physical sensors.
+- ESP32-based device communication.
+- Focus session management.
+- Machine Learning-based analysis.
+- Personal study analytics.
+- Hybrid AI assistance.
+- Gamification and achievements.
+
+The website serves as the product's digital interface and demonstration platform.
+
+Primary target users:
+
+- University students.
+- Senior high school and vocational students.
+- Independent learners.
+- Students who struggle with study consistency and digital distractions.
+
+Product principles:
+
+- Focus on actual study behavior and measurable data.
+- Never claim that physical sensors directly measure cognitive attention.
+- Provide meaningful insights instead of generic motivational content.
+- Keep the experience simple, informative, and accessible.
+- Make every feature understandable to first-time users.
+
+---
+
+3. PROJECT SCOPE AND TECHNICAL ARCHITECTURE
+
+3.1 Website Technology Stack
+
+Use the following stack where supported by the existing project:
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Lucide React
+- React Router
+- Motion
+- Lenis
+- Recharts
+
+Use reusable React components and a modular project structure.
+
+Do not introduce unnecessary libraries or duplicate dependencies.
+
+3.2 Backend-Ready Architecture
+
+The website must be prepared for integration with the team's backend.
+
+Expected backend direction:
+
+- Python
+- FastAPI
+- Pydantic
+- Pandas
+- NumPy
+- Scikit-learn
+
+However, do not assume that FastAPI can run directly inside Google AI Studio Build Mode.
+
+For this development environment:
+
+- Implement the React frontend.
+- Use mock services and structured mock data where real APIs are unavailable.
+- Separate UI components from data services.
+- Prepare service adapters for future API integration.
+- Keep API configuration centralized.
+- Do not invent API endpoints, database schemas, authentication protocols, or BLE UUIDs.
+
+If Google AI Studio provides a Node.js server runtime, use it only for supported server-side functionality, such as secure API integration when needed.
+
+Never expose API keys or credentials in frontend code.
+
+3.3 SIC Stage 3 Separation
+
+The website is not a replacement for the mandatory SIC technical dashboard.
+
+The Stage 3 technical implementation separately requires:
+
+- Real sensor dataset collection.
+- At least 150 labeled data rows.
+- At least three prediction classes.
+- CSV dataset.
+- Data preprocessing.
+- Scikit-learn or Edge Impulse model training.
+- Model testing and evaluation.
+- Accuracy, Precision, Recall or F1-Score, and Confusion Matrix reporting.
+- Sensor-to-model-to-actuator integration.
+- Streamlit dashboard for real-time monitoring and historical visualization.
+
+Do not claim that the React website fulfills the mandatory Streamlit dashboard requirement.
+
+The website may display ML results when actual model data becomes available. Mock predictions must be clearly identified as demonstration data.
+
+---
+
+4. DESIGN DIRECTION
+
+Create a modern, minimal, professional, and polished digital product interface.
+
+The design should feel:
+
+- Clean.
+- Balanced.
+- Consistent.
+- Calm.
+- Modern.
+- Trustworthy.
+- Comfortable for extended use.
+
+Avoid:
+
+- Excessive gradients.
+- Excessive glassmorphism.
+- Overly playful illustrations.
+- Oversized empty spaces.
+- Excessive shadows.
+- Unnecessary decorative elements.
+- Inconsistent spacing.
+- Random component styles.
+- Visual clutter.
+
+Prioritize:
+
+- Strong visual hierarchy.
+- Symmetrical alignment where appropriate.
+- Consistent spacing.
+- Clear typography.
+- Good readability.
+- Functional information density.
+
+Do not copy an existing website. Use premium modern product interfaces as general quality references.
+
+---
+
+5. COLOR SYSTEM
+
+Implement both Light and Dark themes.
+
+Light Theme
+
+- Primary: #0028B3
+- Secondary: #1746C8
+- Soft Blue: #EAF0FC
+- Background: #F5F7FB
+- Surface: #FFFFFF
+- Main Text: #252B38
+
+Dark Theme
+
+- Primary: #8BA8FF
+- Secondary: #5479E8
+- Soft Blue: #202B42
+- Background: #111827
+- Surface: #1C2638
+- Main Text: #F3F5FA
+
+Status colors:
+
+- Success: Green.
+- Warning: Amber.
+- Danger: Red.
+- Information: Blue.
+- Neutral: Gray.
+
+Always pair status colors with text or icons. Never communicate important status using color alone.
+
+Theme selection belongs in Profile → Preferences → Appearance.
+
+Do not add an unnecessary sun/moon toggle in the main header.
+
+Persist the user's theme preference.
+
+---
+
+6. TYPOGRAPHY SYSTEM
+
+Use DM Sans as the primary and exclusive design font.
+
+Font reference:
+https://fonts.google.com/specimen/DM+Sans
+
+Use the actual DM Sans font family with appropriate weights:
+
+- 400 Regular.
+- 500 Medium.
+- 600 SemiBold.
+- 700 Bold.
+
+Do not substitute Inter, Arial, or Plus Jakarta Sans as the primary font.
+
+Preserve DM Sans's natural letterforms, proportions, curves, spacing, and geometric characteristics.
+
+Typography hierarchy:
+
+Element| Size| Weight| Line Height
+Hero Heading| 34–36px| 700| 1.15
+Page Heading| 26–28px| 700| 1.25
+Section Heading| 19–20px| 600| 1.35
+Card Title| 15–16px| 600| 1.4
+Body| 14px| 400| 1.6
+Supporting Text| 12–13px| 400| 1.5
+Button| 13–14px| 600| 1.4
+Navigation| 13–14px| 500| 1.4
+Countdown| 56–64px| 600| 1.1
+Large Statistics| 28–32px| 600| 1.2
+Small Labels| 11–12px| 500| 1.4
+
+Use tabular numerals for:
+
+- Countdown timers.
+- Duration values.
+- Statistics.
+- XP values.
+- Streak counters.
+- Frequently changing numerical values.
+
+Maintain consistent typography throughout all pages.
+
+---
+
+7. SPACING, COMPONENTS, AND VISUAL CONSISTENCY
+
+Use a 4px-based spacing system:
+
+4, 8, 12, 16, 24, 32, and 48px.
+
+Border radius:
+
+- Small: 8px.
+- Medium: 12px.
+- Large: 16px.
+- Extra Large: 20px.
+- Pill: Fully rounded.
+
+Use subtle borders and restrained shadows.
+
+Build reusable components:
+
+- Buttons.
+- Cards.
+- Statistics cards.
+- Status badges.
+- Form fields.
+- Dropdowns.
+- Tabs.
+- Progress bars.
+- Modals.
+- Bottom sheets.
+- Notification items.
+- Achievement cards.
+- Skeleton loaders.
+- Toast notifications.
+- Charts.
+- Empty states.
+- Error states.
+
+Ensure consistent component behavior and appearance across the website.
+
+---
+
+8. RESPONSIVE DESIGN
+
+The website must work properly on mobile, tablet, desktop, and large desktop.
+
+Breakpoints:
+
+- Small Mobile: Below 360px.
+- Mobile: 360–767px.
+- Tablet: 768–1023px.
+- Desktop: 1024–1439px.
+- Large Desktop: 1440px and above.
+
+Responsive principles:
+
+Mobile:
+
+- Single-column layouts.
+- Bottom navigation.
+- Touch-friendly controls.
+- Compact cards.
+- Appropriate text sizes.
+- No horizontal overflow.
+
+Tablet:
+
+- Adaptive two-column layouts.
+- Balanced card arrangements.
+- Wider chart layouts where appropriate.
+
+Desktop:
+
+- Horizontal navigation.
+- Multi-column layouts.
+- Wider tables and charts.
+- Efficient use of screen space.
+
+Do not use a hamburger menu.
+
+Avoid fixed widths and heights that break smaller screens.
+
+Ensure the chatbot, dialogs, dropdowns, tables, and charts remain usable on mobile.
+
+---
+
+9. GLOBAL NAVIGATION
+
+The authenticated application must have exactly five primary navigation items.
+
+Order from left to right:
+
+1. Focus
+2. Dashboard
+3. Home
+4. Device
+5. Profile
+
+Home must be positioned in the center and have a larger, more prominent visual treatment.
+
+Home is the default authenticated landing page.
+
+Mobile:
+
+- Use bottom navigation.
+- Center Home icon should be visually emphasized.
+- Keep labels readable.
+
+Desktop:
+
+- Adapt the navigation into a horizontal layout.
+- Maintain the same information architecture.
+- Keep Home visually prominent without disrupting alignment.
+
+Do not add Notification as a navigation item. Notifications are accessed through the header bell icon.
+
+Do not add unnecessary navigation items.
+
+---
+
+10. PUBLIC LANDING PAGE
+
+Create a polished public-facing landing page introducing FocusLamp.
+
+The landing page must use a predominantly CENTER-ALIGNED visual hierarchy.
+
+10.1 Alignment Rules
+
+Center-align:
+
+- Hero heading.
+- Hero subtitle.
+- Hero description.
+- CTA buttons.
+- Section headings.
+- Section descriptions.
+- Feature introductions.
+- Product benefits.
+- How It Works introduction.
+- FocusMate AI introduction.
+- Closing CTA.
+
+Use centered content containers with suitable max-width constraints.
+
+Maintain symmetrical composition where appropriate.
+
+Keep text lines readable and avoid excessively long paragraphs.
+
+All landing page sections should feel visually balanced around the central axis.
+
+Do not switch to left-aligned headings on desktop merely to fill horizontal space.
+
+This center-alignment rule applies only to the public Landing Page.
+
+Authenticated application pages must retain alignment appropriate to their function.
+
+10.2 Landing Page Sections
+
+Include:
+
+1. Navigation Header.
+2. Hero Section.
+3. Product Introduction.
+4. Main Benefits.
+5. How It Works.
+6. Smart Device Introduction.
+7. FocusMate AI Introduction.
+8. Progress and Analytics Introduction.
+9. Closing Call to Action.
+10. Footer.
+
+Hero section:
+
+- Strong headline.
+- Concise supporting description.
+- Primary CTA: Get Started.
+- Secondary CTA: Learn More.
+- Product visual or illustration.
+
+Keep the copy clear and product-focused.
+
+Do not invent performance statistics or scientific claims.
+
+---
+
+11. SPLASH SCREEN AND ONBOARDING
+
+Implement a brief splash screen with the FocusLamp logo.
+
+Animation duration:
+
+- First launch: approximately 3–5 seconds.
+- Returning user: shorter.
+
+Never force unnecessary waiting.
+
+First-time onboarding includes three slides:
+
+1. Build Better Focus Habits.
+2. Reduce Digital Distractions.
+3. Understand Your Progress.
+
+Each slide includes:
+
+- Illustration or visual.
+- Heading.
+- Supporting description.
+- Next.
+- Back.
+- Skip.
+- Get Started.
+
+Keep onboarding concise and easy to understand.
+
+---
+
+12. AUTHENTICATION
+
+Create functional authentication interfaces.
+
+Pages:
+
+- Authentication Landing.
+- Register.
+- Login.
+- Forgot Password.
+- Password Reset.
+- Email Verification.
+
+12.1 Registration Fields
+
+- Full Name.
+- Email Address.
+- Password.
+- Confirm Password.
+- Required Terms and Conditions consent.
+- Required Privacy Policy acknowledgement.
+- Optional marketing consent.
+
+Required checkboxes must start unchecked.
+
+Create Account must remain disabled until required consent is accepted.
+
+Optional marketing consent must never be mandatory.
+
+12.2 Validation Rules
+
+Full Name:
+
+- Required.
+- Minimum 3 characters after trimming.
+- Maximum 100 characters.
+- Allow letters, spaces, hyphens, and apostrophes.
+- Reject values containing only numbers or symbols.
+
+Email:
+
+- Required.
+- Must contain one valid @ separator.
+- Must have a valid domain.
+- Must not contain spaces.
+- Must be unique.
+- Avoid unnecessarily restrictive regular expressions.
+
+Password:
+
+- Required.
+- Minimum 8 characters.
+- At least one lowercase letter.
+- At least one digit.
+- Uppercase and special characters recommended but not mandatory.
+- No spaces in the proposed MVP.
+- Maximum 64–128 characters.
+
+Confirm Password:
+
+- Required.
+- Must exactly match Password.
+
+Provide real-time validation and clear error messages.
+
+Revalidate on form submission.
+
+Backend validation is required for production.
+
+12.3 Authentication Behavior
+
+- One unique email per account.
+- Multiple devices may access the same account.
+- Each user must have isolated personal data.
+- Changing email requires verification of the new address.
+- The old email remains active until the new email is verified.
+- Password reset link should expire after 30 minutes and be single-use.
+- Email verification link should expire after 24 hours.
+- Production authentication must use a secure backend.
+
+For this prototype:
+
+- Use simulated authentication and mock profiles.
+- Support registration and login interactions.
+- Simulate email verification and password recovery.
+- Use demo accounts with different datasets.
+- Never claim mock authentication is production-secure.
+- Never ask users to enter real passwords for a demonstration environment.
+
+---
+
+13. HOME PAGE
+
+Home is the default authenticated page.
+
+It should provide an overview of the user's study activity without overwhelming the user.
+
+Include:
+
+1. Personalized greeting.
+2. Current date.
+3. Notification bell.
+4. Profile shortcut.
+5. Device Status Card.
+6. Quick Focus Action.
+7. Today's Progress.
+8. FocusMate AI Insight.
+9. Gamification Progress.
+10. Recent Activity.
+11. Achievement Notification.
+
+Device Status Card
+
+Display:
+
+- Connected or disconnected.
+- Device name.
+- Connection state.
+- Last synchronization status.
+- Readiness state.
+
+Do not falsely show a device as connected.
+
+Quick Focus Action
+
+If there is no active session:
+
+- Show Start Focus.
+
+If there is an active session:
+
+- Show Resume or View Active Session.
+- Do not allow the user to accidentally start a second session.
+
+Today's Progress
+
+Display:
+
+- Total actual focus duration.
+- Completed sessions.
+- Daily target progress.
+
+FocusMate AI Insight
+
+Show relevant personalized information based on available data.
+
+If there is insufficient data, explain that personalized insights are not yet available.
+
+Recent Activity
+
+Display recent focus sessions, achievements, and relevant events.
+
+Every card should open the appropriate detail page or view.
+
+---
+
+14. FOCUS PAGE
+
+The Focus page is the main study-session interface.
+
+It contains three primary views:
+
+1. Setup.
+2. Active Session.
+3. Session Result.
+
+14.1 Setup View
+
+Include:
+
+- Session duration selector.
+- Preset durations: 15, 25, 30, and 45 minutes.
+- Custom duration input.
+- Device readiness.
+- Phone dock status.
+- DND permission status.
+- Session preferences.
+- Start Focus button.
+
+Do not impose an arbitrary product-level maximum duration.
+
+However, the current firmware prototype may support 1–60 minutes. Respect the actual device/API capability when available and communicate technical limitations clearly.
+
+The phone must be correctly placed on the dock before starting if required by the device protocol.
+
+If the phone is not docked:
+
+- Disable starting when required by device readiness.
+- Explain why the session cannot start.
+- Show a clear instruction to place the phone on the dock.
+
+14.2 Active Session View
+
+Prioritize the countdown timer.
+
+Display:
+
+- Large countdown.
+- Session status.
+- Device connection.
+- Phone dock state.
+- User presence state.
+- DND status.
+- End Session button.
+
+Keep this screen distraction-free.
+
+Use clear status labels:
+
+- Ready.
+- Focusing.
+- Away.
+- Phone Lifted.
+- Reconnecting.
+- Connection Lost.
+
+The ESP32/device firmware remains the authority for device-side session state and sensor events.
+
+The website must reflect the latest confirmed state from the available integration.
+
+Do not independently invent sensor thresholds.
+
+14.3 Session State Rules
+
+Use the existing device/firmware rules where available.
+
+Important behaviors:
+
+- Returning after AWAY automatically resumes FOCUS according to the existing device behavior.
+- The AWAY event remains recorded.
+- Phone-lift tolerance must follow the actual firmware/MQTT rules.
+- Manual End Session must be recorded as Manually Ended.
+- Bluetooth disconnection alone must not automatically end a session.
+- Show Reconnecting and Connection Lost separately.
+- When reconnected, retrieve the latest confirmed session state.
+- Do not assume that the app closing means the session has ended.
+- Do not invent pause/resume support if the firmware does not provide it.
+
+14.4 Session Result View
+
+Display:
+
+- Actual focus duration.
+- Session outcome.
+- Earned XP.
+- Level progress.
+- Relevant achievements.
+- Optional reflection.
+- Return Home action.
+
+Possible results:
+
+- Completed.
+- Interrupted.
+- Abandoned.
+- Manually Ended.
+
+Keep result details accurate and derived from actual session records.
+
+---
+
+15. DEVICE PAGE
+
+Create a dedicated Device page.
+
+Include:
+
+- Device connection status.
+- Device name and identifier when available.
+- Connection state.
+- Last synchronization time.
+- Battery status only if supported by the actual hardware.
+- Phone dock status.
+- Ambient light sensor status.
+- Presence sensor status.
+- Firmware or device information when available.
+- Troubleshooting guidance.
+
+Include clear states:
+
+- Connected.
+- Disconnected.
+- Connecting.
+- Reconnecting.
+- Connection Failed.
+
+Do not display invented sensor readings as real measurements.
+
+Mock readings must be labeled as demonstration data.
+
+The React website must not pretend to directly control Bluetooth or Android DND through ordinary browser capabilities.
+
+---
+
+16. DASHBOARD PAGE
+
+Create a detailed study analytics dashboard.
+
+This is the product-facing analytics interface, not a replacement for the mandatory SIC Streamlit dashboard.
+
+Include:
+
+Overview
+
+- Total focus duration.
+- Completed sessions.
+- Completion rate.
+- Daily and weekly progress.
+- Current streak.
+
+Historical Analytics
+
+- Daily focus duration chart.
+- Weekly comparison.
+- Monthly progress.
+- Session frequency.
+- Session history table.
+- Session detail view.
+
+Behavioral Insights
+
+When the corresponding data exists:
+
+- Away events.
+- Phone lift events.
+- Completion patterns.
+- Start-time patterns.
+- Focus duration trends.
+
+Do not infer mental attention directly from physical sensor readings.
+
+ML Results
+
+When real model integration is available, display:
+
+- Predicted class.
+- Confidence score, if supplied by the model.
+- Relevant sensor input.
+- Prediction timestamp.
+- Model information.
+
+Do not fabricate model accuracy, confidence, training results, or evaluation metrics.
+
+Demonstration predictions must be labeled clearly.
+
+Data Visualization
+
+Use Recharts.
+
+Charts must:
+
+- Be responsive.
+- Have readable labels.
+- Use consistent colors.
+- Support empty states.
+- Display meaningful tooltips.
+- Avoid unnecessary visual decoration.
+
+Provide CSV export when appropriate.
+
+---
+
+17. FOCUSMATE AI
+
+FocusMate AI is the intelligent study companion within FocusLamp.
+
+Its architecture is Hybrid AI.
+
+17.1 LLM Conversational Engine
+
+LLM is the primary engine for natural-language interaction.
+
+Functions:
+
+- Answer questions about study habits.
+- Explain available focus insights.
+- Explain ML prediction results.
+- Provide contextual study recommendations.
+- Discuss productivity and learning strategies.
+- Provide supportive motivation.
+
+Use a secure backend or supported server-side integration for LLM requests.
+
+Never expose API keys in frontend code.
+
+17.2 ML Analytics Engine
+
+ML is responsible for structured analysis and prediction.
+
+Functions:
+
+- Analyze study patterns.
+- Evaluate session completion patterns.
+- Analyze focus duration trends.
+- Provide data-based duration recommendations.
+- Explain prediction results using available model output.
+
+The LLM must not replace the actual ML model.
+
+17.3 Backend Orchestration
+
+The backend should provide relevant summarized context to the LLM.
+
+Possible context:
+
+- Actual sensor values.
+- Prediction labels.
+- Confidence scores.
+- Session summaries.
+- Historical trends.
+- Available model information.
+
+Do not invent missing data.
+
+17.4 AI Behavior
+
+Personality:
+
+- Warm.
+- Empathetic.
+- Informative.
+- Encouraging.
+- Calm.
+- Professional.
+- Not robotic.
+- Not childish.
+
+The AI must:
+
+- Explain the basis of recommendations.
+- Distinguish actual data from estimates.
+- Mention insufficient data when applicable.
+- Never invent user statistics.
+- Never invent sensor readings or prediction results.
+- Avoid unsupported scientific claims.
+
+17.5 Science and Fun Facts
+
+Provide curated educational facts about:
+
+- Focus.
+- Memory.
+- Sleep.
+- Learning.
+- Study habits.
+- Digital distractions.
+
+Every scientific fact should include:
+
+- Fact or explanation.
+- Source title.
+- Author or institution when available.
+- Publication year.
+- Reference link.
+
+Never fabricate sources.
+
+17.6 LLM Failure Handling
+
+If the LLM service is unavailable:
+
+- Show a clear unavailable state.
+- Keep analytics and ML functions working where possible.
+- Do not disguise predefined responses as actual LLM output.
+
+If ML data is insufficient:
+
+- Explain the limitation.
+- Do not present rule-based estimates as trained model predictions.
+
+17.7 Chatbot UI
+
+Create a polished chatbot interface.
+
+Default behavior:
+
+- Compact floating chatbot launcher.
+- Opens a conversational side panel or bottom sheet.
+- Supports message history.
+- Shows typing/loading states.
+- Has clear error and retry states.
+
+Provide an Open Full Page action.
+
+Full-page behavior:
+
+- The chatbot expands into a dedicated full-page experience.
+- On desktop, use a spacious conversational layout with a clear content hierarchy.
+- On mobile, use a full-screen layout with a fixed input area and scrollable conversation.
+- Maintain appropriate safe areas and keyboard behavior.
+- Provide a clear way to return to the previous application view.
+- Preserve conversation state when expanding, minimizing, or navigating.
+- Avoid clipping, overflow, or overlapping input controls.
+
+The chatbot must remain usable on small screens.
+
+Do not make the chatbot the dominant element of the entire application.
+
+Prioritize data-based insights over generic chatbot conversations.
+
+---
+
+18. GAMIFICATION SYSTEM
+
+Create a meaningful gamification system that encourages consistent study habits.
+
+18.1 XP Calculation
+
+Proposed formula:
+
+XP = floor(actual_focus_minutes) + completion_bonus
+
+Completion bonus:
+
+- Completed session: +5 XP.
+- Partial or manually ended session: no completion bonus.
+- Zero actual focus minutes: 0 XP.
+
+Only actual FOCUS duration counts.
+
+Away or paused periods must not count.
+
+Examples:
+
+- 25-minute completed session = 30 XP.
+- 10-minute manually ended session = 10 XP.
+- 15-minute partial session = 15 XP.
+
+Rules:
+
+- One reward per unique session.
+- Use session_id to prevent duplicate rewards.
+- Exclude demo data from real reward calculations.
+- Award only after session data is confirmed.
+- Prevent double rewards from MQTT retransmission.
+
+18.2 Level System
+
+Initial proposed cumulative thresholds:
+
+Level| Required XP
+Level 1| 0
+Level 2| 100
+Level 3| 250
+Level 4| 450
+Level 5| 700
+Level 6| 1000
+
+Keep the level system configurable.
+
+18.3 Streak System
+
+Rules:
+
+- A valid study day requires at least 5 actual focus minutes.
+- Count at most one streak increment per calendar day.
+- Multiple sessions on the same day do not increase the streak more than once.
+- Use the user's local timezone.
+- Streak is based on actual focus activity, not opening the app.
+
+Streak Recovery:
+
+- Maximum 3 uses per calendar month.
+- Monthly allowance resets at the start of each month.
+- One recovery use repairs one missed day.
+- Recovery cannot repair future days.
+- Recovery does not award XP or achievements.
+
+18.4 Achievement System
+
+Create at least 26 achievements.
+
+Categories and initial achievement names:
+
+Focus Milestones
+
+1. First Spark
+2. Getting Started
+3. Focus Builder
+4. Deep Focus
+5. One Hour Club
+6. Long Journey
+
+Consistency
+7. Three-Day Rhythm
+8. Week of Focus
+9. Two-Week Discipline
+10. Monthly Momentum
+11. Back on Track
+12. Consistency Champion
+
+Session Mastery
+13. Session Starter
+14. Routine Maker
+15. Focus Enthusiast
+16. Session Expert
+17. Hundred Sessions
+
+Learning Explorer
+18. Curious Mind
+19. Knowledge Seeker
+20. Learning Explorer
+21. Knowledge Collector
+
+Personal Growth
+22. Small Improvement
+23. Better Completion
+24. Weekly Comeback
+25. Personal Best
+26. Balanced Learner
+
+Define clear unlock conditions and configurable reward values.
+
+Do not award achievements more than once.
+
+---
+
+19. NOTIFICATION SYSTEM
+
+Create an in-app notification center accessible through the header bell icon.
+
+Notification categories:
+
+1. Device Events.
+2. Focus Session Events.
+3. Rewards and Achievements.
+4. AI Insights.
+5. System Alerts.
+6. Reminders.
+7. Educational Facts.
+
+Examples:
+
+- Device connected.
+- Device disconnected.
+- Focus started.
+- Focus completed.
+- Focus interrupted.
+- Achievement unlocked.
+- Streak milestone.
+- New AI recommendation.
+- DND permission reminder.
+- Bluetooth issue.
+- Synchronization failure.
+- New Fun Fact.
+
+19.1 Notification Behavior
+
+During an active Focus session:
+
+- Mute all FocusLamp notifications.
+- Queue notifications.
+- Display queued notifications after the session ends.
+
+This rule concerns FocusLamp notifications. Android DND behavior for other applications is handled separately by Android settings and permissions.
+
+19.2 Grouping
+
+Similar notifications may be grouped.
+
+However, preserve the individual timestamp and details of every event.
+
+Example:
+
+- Group title: 3 sessions completed.
+- Expanded view: individual session timestamps and details.
+
+19.3 Retention
+
+Provide configurable retention:
+
+- 3 days.
+- 1 week.
+- 1 month.
+
+Default: 1 month.
+
+Deleting old notifications must not delete session history, analytics, achievements, or other permanent records.
+
+19.4 Deduplication
+
+Use unique event_id values.
+
+The backend should process each event once.
+
+Prevent duplicate notifications and duplicate XP when MQTT messages are retransmitted.
+
+19.5 Notification UI
+
+Include:
+
+- Read/unread status.
+- Mark all as read.
+- Notification details.
+- Category grouping.
+- Empty state.
+- Error state.
+- Retention preferences.
+
+Android push notifications belong to the separate native Android implementation.
+
+---
+
+20. PROFILE AND PREFERENCES
+
+Create a Profile page containing:
+
+- Profile information.
+- Account settings.
+- Language.
+- Theme.
+- Notification preferences.
+- Appearance preferences.
+- Default focus duration.
+- Daily focus target.
+- Streak recovery information.
+- Logout.
+
+Language
+
+Support:
+
+- Bahasa Indonesia.
+- English.
+
+Rules:
+
+- Only one language is active at a time.
+- Do not mix languages in the interface.
+- Translate navigation, pages, messages, notifications, rewards, facts, and error states.
+- Default to device language on first launch when possible.
+- Allow the user to change language anytime.
+- Persist language preference.
+
+Theme
+
+Support:
+
+- Light.
+- Dark.
+
+Persist the selected theme.
+
+---
+
+21. BROWSER NAVIGATION
+
+Implement correct browser history behavior.
+
+Rules:
+
+- After successful login, Home is the first authenticated page.
+- Browser Back from Home should return to the public Landing Page, not Login or Register.
+- Unauthenticated access to private pages must redirect to Login.
+- After logout, private routes must not be accessible through browser history.
+- Do not show an exit confirmation on every browser Back action.
+- Detail pages should return to their appropriate parent page.
+- Preserve navigation state where appropriate.
+
+If a focus session is active, browser navigation must not automatically end the session.
+
+The session state must be restored from the latest available device/backend data.
+
+---
+
+22. MOTION AND ANIMATION SYSTEM
+
+Create an elegant, natural, and smooth animation experience throughout the website.
+
+Use the following libraries:
+
+Motion
+https://motion.dev
+
+Lenis
+https://lenis.dev
+
+Do not install or use GSAP in this project.
+
+Motion is the primary React animation library. Lenis is responsible for smooth scrolling.
+
+Avoid using multiple animation engines for overlapping purposes.
+
+22.1 Motion
+
+Use Motion for:
+
+- Page transitions.
+- Content entrance.
+- Card entrance.
+- Hover interactions.
+- Button feedback.
+- Modal transitions.
+- Bottom-sheet transitions.
+- Navigation feedback.
+- Notification panel transitions.
+- Chatbot interactions.
+- Achievement feedback.
+- Loading and skeleton transitions.
+
+Use "whileInView" and viewport-based animation triggers where appropriate.
+
+22.2 Landing Page Scroll Animations
+
+Hero:
+
+- Reveal the main heading word by word.
+- Fade in the supporting description.
+- Reveal CTA buttons with subtle upward movement.
+- Animate visual elements without excessive movement.
+
+Section Headings:
+
+- Use word-by-word reveal when headings enter the viewport.
+- Trigger when the heading becomes visible.
+- Avoid excessive replay when scrolling up and down.
+
+Feature Cards:
+
+- Fade in with subtle upward movement.
+- Use staggered appearance.
+- Apply restrained hover elevation or scale.
+
+Other Sections:
+
+- Use subtle opacity and transform transitions.
+- Maintain consistent timing.
+- Do not animate every element independently.
+
+22.3 Application Animations
+
+Use subtle functional animations.
+
+Examples:
+
+- Card hover.
+- Page content entrance.
+- Tab transitions.
+- Modal opening and closing.
+- Notification panel.
+- Chatbot expansion.
+- Progress indicators.
+- Achievement unlock feedback.
+
+Do not animate essential controls in a way that delays interaction.
+
+22.4 Lenis Smooth Scrolling
+
+Use a single shared Lenis instance.
+
+Requirements:
+
+- Manage its lifecycle correctly in React.
+- Avoid duplicate instances during rerenders.
+- Clean up properly.
+- Support React Router navigation.
+- Handle scroll restoration appropriately.
+- Preserve keyboard accessibility.
+- Avoid interference with nested scrollable elements.
+- Do not interfere with modals, dropdowns, chatbot panels, or dashboard charts.
+
+Use natural scrolling for interactive application panels where smooth scrolling would reduce usability.
+
+22.5 Timing and Easing
+
+Recommended timing:
+
+Animation| Duration
+Micro-interaction| 120–180ms
+Button/toggle| 150–220ms
+Content entrance| 180–260ms
+Page transition| 220–320ms
+Modal/panel| 200–280ms
+Stagger delay| 40–70ms
+
+Preferred easing:
+
+cubic-bezier(0.22, 1, 0.36, 1)
+
+Use opacity and transform for most transitions.
+
+Respect "prefers-reduced-motion".
+
+Avoid:
+
+- Excessive bounce.
+- Unnecessary parallax.
+- Continuous decorative animation.
+- Excessive motion on every scroll.
+- Layout-shifting animations.
+
+The experience should feel smooth, effortless, elegant, and polished.
+
+---
+
+23. SCROLLBAR DESIGN
+
+Use subtle and functional scrollbars.
+
+Desktop:
+
+- Approximately 4px width.
+- Transparent track.
+- Low-contrast neutral thumb.
+- Slightly more visible on hover or scrolling.
+
+Adapt scrollbar appearance to Light and Dark themes.
+
+Do not hide scrollbars completely when they are needed to communicate scrollable content.
+
+Avoid nested scrollbars unless necessary.
+
+Ensure scrollbar styling does not cause layout shifts.
+
+---
+
+24. MOCK DATA AND APPLICATION STATE
+
+The prototype must be functional even without the real backend.
+
+Use consistent mock data across all pages.
+
+Create mock entities for:
+
+- Users.
+- Devices.
+- Focus sessions.
+- Sensor readings.
+- ML predictions.
+- AI insights.
+- XP.
+- Levels.
+- Streaks.
+- Achievements.
+- Notifications.
+- AI conversations.
+
+Use separate mock profiles with different data.
+
+Example demo accounts:
+
+- student1@focuslamp.demo
+- student2@focuslamp.demo
+
+Each account must have different:
+
+- Session history.
+- Focus statistics.
+- XP.
+- Streak.
+- Achievements.
+- Preferences.
+- Notification history.
+
+Do not use random values that change inconsistently across pages.
+
+Use a centralized mock data service.
+
+Provide clear demonstration states:
+
+- New user.
+- No device connected.
+- Device connected.
+- Active session.
+- Completed session.
+- Insufficient analytics data.
+- AI unavailable.
+- Empty notifications.
+- Synchronization failure.
+
+Clearly label simulated sensor readings, predictions, and demonstration datasets.
+
+Never present mock data as actual hardware measurements or trained model output.
+
+---
+
+25. API AND INTEGRATION READINESS
+
+Prepare the project for future backend integration.
+
+Use a service layer separating:
+
+- Authentication.
+- User profile.
+- Device.
+- Focus sessions.
+- Dashboard analytics.
+- ML predictions.
+- AI conversations.
+- Gamification.
+- Notifications.
+
+Keep mock implementations replaceable.
+
+When the team's API contract becomes available:
+
+- Use the actual endpoints.
+- Use the actual request and response schemas.
+- Follow the agreed authentication method.
+- Follow the agreed session state protocol.
+- Follow the actual BLE and MQTT integration boundaries.
+
+Do not invent endpoint names or data formats.
+
+The website must not directly claim to control ESP32 hardware through unsupported browser functionality.
+
+---
+
+26. ERROR, LOADING, AND EMPTY STATES
+
+Every major feature must handle:
+
+- Loading.
+- Empty.
+- Error.
+- Offline.
+- Reconnecting.
+- Insufficient data.
+- Unauthorized access.
+- Failed synchronization.
+- Unavailable service.
+
+Use clear and actionable messages.
+
+Examples:
+
+- No device connected.
+- No focus sessions yet.
+- Not enough data for personalized recommendations.
+- Unable to retrieve device status.
+- AI service temporarily unavailable.
+- Synchronization failed. Please try again.
+
+Avoid technical jargon when communicating with regular users.
+
+Provide technical details only where useful.
+
+---
+
+27. ACCESSIBILITY AND PERFORMANCE
+
+Accessibility:
+
+- Appropriate text contrast.
+- Keyboard navigation.
+- Accessible labels.
+- Clear focus indicators.
+- Touch-friendly controls.
+- Readable font sizes.
+- Proper semantic HTML.
+- Reduced motion support.
+- Responsive text expansion for bilingual content.
+
+Performance:
+
+- Optimize images.
+- Lazy-load non-critical assets.
+- Avoid unnecessary rerenders.
+- Use efficient component structure.
+- Avoid excessive dependencies.
+- Keep animations lightweight.
+- Ensure acceptable performance on mid-range Android devices and low-powered laptops.
+
+---
+
+28. IMPLEMENTATION WORKFLOW
+
+Develop incrementally.
+
+Recommended order:
+
+Phase 1:
+
+- Audit existing project.
+- Confirm current architecture.
+- Identify reusable components.
+- Identify missing functionality.
+
+Phase 2:
+
+- Establish design system.
+- Configure DM Sans.
+- Configure Light and Dark themes.
+- Establish responsive layouts.
+- Implement navigation.
+
+Phase 3:
+
+- Landing Page.
+- Splash Screen.
+- Onboarding.
+- Authentication.
+
+Phase 4:
+
+- Home.
+- Focus.
+- Device.
+- Dashboard.
+- Profile.
+
+Phase 5:
+
+- FocusMate AI interface.
+- Notification center.
+- Gamification.
+- Language switching.
+
+Phase 6:
+
+- Motion integration.
+- Lenis integration.
+- Scroll behavior.
+- Responsive refinement.
+
+Phase 7:
+
+- Mock data consistency.
+- API-ready service architecture.
+- Error and empty states.
+
+Phase 8:
+
+- Functional testing.
+- Responsive testing.
+- Accessibility review.
+- Performance review.
+- Final visual refinement.
+
+Do not regenerate the entire project unnecessarily.
+
+Preserve existing working code wherever possible.
+
+---
+
+29. ACCEPTANCE CRITERIA
+
+The website is considered complete only when:
+
+1. The public Landing Page is fully center-aligned across its content hierarchy.
+2. The website uses DM Sans consistently.
+3. Light and Dark themes work.
+4. Bahasa Indonesia and English work consistently.
+5. The five navigation items appear in the specified order.
+6. Home is the default authenticated page and visually emphasized.
+7. Authentication forms have functional validation.
+8. Mock user profiles have isolated data.
+9. Focus setup, active session, and result views work.
+10. Session states are represented accurately.
+11. Bluetooth disconnection does not automatically end a session.
+12. Device status is displayed truthfully.
+13. Dashboard charts and session history work.
+14. Mock ML results are clearly identified as demonstrations.
+15. FocusMate AI has a functional interface and appropriate unavailable states.
+16. Chatbot supports compact and full-page modes.
+17. Gamification calculations follow the specified rules.
+18. At least 26 achievements are implemented.
+19. Notification grouping and retention preferences work.
+20. FocusLamp notifications are muted and queued during active sessions.
+21. Browser navigation follows the specified behavior.
+22. Motion animations work smoothly.
+23. Lenis smooth scrolling works without breaking nested scrolling.
+24. No GSAP is introduced.
+25. Scrollbars remain subtle and functional.
+26. The website works on mobile, tablet, and desktop.
+27. Loading, empty, offline, and error states are handled.
+28. No invented sensor values, model metrics, scientific sources, or API contracts are presented as real.
+29. Existing reusable project components are preserved.
+30. No major buttons or interactions are left non-functional.
+
+---
+
+30. FINAL DELIVERY
+
+After implementation:
+
+1. Summarize the actual changes made.
+2. List completed pages and features.
+3. List remaining incomplete features.
+4. Identify mock implementations that still need real backend integration.
+5. Identify technical limitations.
+6. Report any tests performed and their results.
+7. Provide the updated project structure.
+8. Do not claim that a feature works if it has not been tested.
+
+The final website must feel like a cohesive, production-oriented product prototype rather than a collection of disconnected demonstration screens.
+
+Prioritize accuracy, consistency, usability, responsiveness, and implementation quality.
+
+Start by inspecting the existing project, then implement the specification directly in the existing codebase.

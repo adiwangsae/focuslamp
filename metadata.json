@@ -1,0 +1,8 @@
+{
+  "name": "FocusLamp",
+  "description": "Smart study lamp ecosystem for intentional focus sessions, behavioral analytics, and guided study habits.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
