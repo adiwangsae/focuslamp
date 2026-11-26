@@ -32,14 +32,12 @@ interface AchievementCatalogSectionProps {
   achievements: AchievementStatus[];
   language: Language;
   title: string;
-  isDemo?: boolean;
 }
 
 export const AchievementCatalogSection: React.FC<AchievementCatalogSectionProps> = ({
   achievements,
   language,
   title,
-  isDemo = false,
 }) => {
   const [category, setCategory] = useState<'All' | AchievementCategory>('All');
   const [statusFilter, setStatusFilter] = useState<AchievementStatusFilter>('all');
@@ -93,13 +91,6 @@ export const AchievementCatalogSection: React.FC<AchievementCatalogSectionProps>
                 <h2 className="fl-type-card break-words">
                   {title} · {unlockedCount}/{achievements.length}
                 </h2>
-                {isDemo && (
-                  <span className="rounded-full bg-[var(--fl-soft-blue)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--fl-primary)]">
-                    <span className="fl-lang">
-                      {language === 'id' ? 'Data Demo' : 'Demo Data'}
-                    </span>
-                  </span>
-                )}
               </div>
               <p className="fl-type-label mt-0.5 break-words text-[var(--fl-muted)]">
                 {language === 'id'
@@ -245,7 +236,7 @@ export const AchievementCatalogSection: React.FC<AchievementCatalogSectionProps>
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
                 {unlockedFiltered.map((ach) => (
                   <AchievementItemCard
                     key={ach.id}
@@ -294,7 +285,7 @@ export const AchievementCatalogSection: React.FC<AchievementCatalogSectionProps>
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
                 {lockedFiltered.map((ach) => (
                   <AchievementItemCard
                     key={ach.id}

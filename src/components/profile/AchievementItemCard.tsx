@@ -63,11 +63,28 @@ export const AchievementItemCard: React.FC<AchievementItemCardProps> = ({
     language === 'id' ? CATEGORY_LABELS_ID[achievement.category] : achievement.category;
   const requirementSummary = getAchievementRequirementSummary(achievement, language);
 
+  const statusBadge =
+    state === 'unlocked' ? (
+      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--fl-surface)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--fl-sage)] shadow-xs">
+        <CheckCircle2 className="h-3 w-3 shrink-0" strokeWidth={1.85} aria-hidden="true" />
+        <span className="fl-lang">{language === 'id' ? 'Terbuka' : 'Unlocked'}</span>
+      </span>
+    ) : state === 'in_progress' ? (
+      <span className="rounded-full bg-[var(--fl-soft-blue)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--fl-primary)] tabular-nums">
+        {pct}%
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--fl-surface)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--fl-muted)]">
+        <Lock className="h-3 w-3 shrink-0" strokeWidth={1.6} aria-hidden="true" />
+        <span className="fl-lang">{language === 'id' ? 'Terkunci' : 'Locked'}</span>
+      </span>
+    );
+
   return (
     <div
       data-testid={`achievement-card-${achievement.id}`}
       data-achievement-state={state}
-      className={`fl-card-interactive min-w-0 rounded-2xl transition-colors duration-200 ${
+      className={`fl-card-interactive flex min-w-0 flex-col rounded-2xl transition-colors duration-200 ${
         state === 'unlocked'
           ? 'fl-card-sage'
           : state === 'in_progress'
@@ -79,84 +96,90 @@ export const AchievementItemCard: React.FC<AchievementItemCardProps> = ({
         type="button"
         aria-expanded={expanded}
         onClick={onToggle}
-        className="w-full cursor-pointer rounded-2xl p-4 text-center transition-colors hover:bg-black/[0.015] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--fl-primary)] lg:text-left dark:hover:bg-white/[0.02]"
+        className="flex w-full cursor-pointer flex-col rounded-2xl p-4 text-center transition-colors hover:bg-black/[0.015] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--fl-primary)] lg:flex-1 lg:justify-between lg:text-left dark:hover:bg-white/[0.02]"
       >
-        {/* Top Row: Icon + Title + Status + Chevron */}
-        <div className="flex flex-col items-center gap-2.5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col items-center gap-2.5 lg:flex-row lg:items-start">
-            <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                state === 'unlocked'
-                  ? 'bg-[var(--fl-surface)] text-[var(--fl-sage)] shadow-xs'
-                  : state === 'in_progress'
-                  ? 'bg-[var(--fl-soft-blue)] text-[var(--fl-primary)]'
-                  : 'bg-[var(--fl-surface)] text-[var(--fl-muted)]'
-              }`}
-            >
-              <Icon className="h-4 w-4" strokeWidth={1.65} aria-hidden="true" />
-            </span>
+        <div className="w-full">
+          {/* Top Row: Icon + Title (+ Description on <lg) + Chevron (+ Status on <lg) */}
+          <div className="flex flex-col items-center gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 flex-1 flex-col items-center gap-2.5 lg:flex-row lg:items-center">
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                  state === 'unlocked'
+                    ? 'bg-[var(--fl-surface)] text-[var(--fl-sage)] shadow-xs'
+                    : state === 'in_progress'
+                    ? 'bg-[var(--fl-soft-blue)] text-[var(--fl-primary)]'
+                    : 'bg-[var(--fl-surface)] text-[var(--fl-muted)]'
+                }`}
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.65} aria-hidden="true" />
+              </span>
 
-            <div className="min-w-0 flex-1">
-              <h3 className="fl-type-support break-words font-semibold leading-snug text-[var(--fl-text)]">
-                {title}
-              </h3>
-              <p className="fl-type-label mt-1 break-words leading-relaxed text-[var(--fl-muted)]">
-                {description}
-              </p>
+              <div className="min-w-0 flex-1">
+                <h3 className="fl-type-support break-words font-semibold leading-snug text-[var(--fl-text)]">
+                  {title}
+                </h3>
+                <p className="fl-type-label mt-1 break-words leading-relaxed text-[var(--fl-muted)] lg:hidden">
+                  {description}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-1.5">
+              <span className="lg:hidden">{statusBadge}</span>
+
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-[var(--fl-muted)] transition-transform duration-200 ${
+                  expanded ? 'rotate-180' : ''
+                }`}
+                strokeWidth={1.6}
+                aria-hidden="true"
+              />
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5">
-            {state === 'unlocked' ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--fl-surface)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--fl-sage)] shadow-xs">
-                <CheckCircle2 className="h-3 w-3 shrink-0" strokeWidth={1.85} aria-hidden="true" />
-                <span className="fl-lang">{language === 'id' ? 'Terbuka' : 'Unlocked'}</span>
-              </span>
-            ) : state === 'in_progress' ? (
-              <span className="rounded-full bg-[var(--fl-soft-blue)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--fl-primary)] tabular-nums">
-                {pct}%
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--fl-surface)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--fl-muted)]">
-                <Lock className="h-3 w-3 shrink-0" strokeWidth={1.6} aria-hidden="true" />
-                <span className="fl-lang">{language === 'id' ? 'Terkunci' : 'Locked'}</span>
-              </span>
-            )}
-
-            <ChevronDown
-              className={`h-4 w-4 shrink-0 text-[var(--fl-muted)] transition-transform duration-200 ${
-                expanded ? 'rotate-180' : ''
-              }`}
-              strokeWidth={1.6}
-              aria-hidden="true"
-            />
-          </div>
+          {/* Desktop (>=1024px) Full-Width Description utilizing full horizontal card space */}
+          <p
+            data-testid={`achievement-desc-${achievement.id}`}
+            className="fl-type-label hidden break-words leading-relaxed text-[var(--fl-muted)] lg:mt-2.5 lg:block"
+          >
+            {description}
+          </p>
         </div>
 
-        {/* Footer / Progress: Unlocked displays earned reward badge cleanly (no incomplete bar); Locked/In-Progress displays real target progress */}
+        {/* Dedicated Bottom Status & Progress Area */}
         {state === 'unlocked' ? (
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 border-t border-[var(--fl-sage-border)]/70 pt-2.5 lg:justify-between">
+          <div
+            data-testid={`achievement-status-area-${achievement.id}`}
+            className="mt-3 flex w-full flex-wrap items-center justify-center gap-2 border-t border-[var(--fl-sage-border)]/70 pt-2.5 lg:mt-3.5 lg:justify-between"
+          >
             <span className="fl-type-label inline-flex items-center gap-1 break-words font-semibold text-[var(--fl-sage)]">
               <Award className="h-3.5 w-3.5 shrink-0" strokeWidth={1.7} aria-hidden="true" />
               <span>{reward}</span>
             </span>
-            <span className="fl-type-label shrink-0 font-medium text-[var(--fl-muted)]">
+            <span className="fl-type-label shrink-0 font-medium text-[var(--fl-muted)] lg:hidden">
               {categoryLabel}
             </span>
+            <span className="hidden lg:inline-flex shrink-0">{statusBadge}</span>
           </div>
         ) : (
-          <div className="mt-3">
+          <div
+            data-testid={`achievement-status-area-${achievement.id}`}
+            className="mt-3 w-full lg:mt-3.5 lg:border-t lg:border-[var(--fl-border)]/65 lg:pt-2.5"
+          >
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--fl-border)]/80">
               <div
                 className="h-full rounded-full bg-[#1E3F9E] transition-all duration-300 dark:bg-[#8BA8FF]"
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <div className="fl-type-label mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[var(--fl-muted)] tabular-nums lg:justify-between">
+            <div className="fl-type-label mt-1.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[var(--fl-muted)] tabular-nums lg:mt-2 lg:justify-between">
               <span className="min-w-0 break-words">{reward}</span>
-              <span className="shrink-0 font-semibold text-[var(--fl-text)]">
-                {achievement.progress} / {achievement.target}
-              </span>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="shrink-0 font-semibold text-[var(--fl-text)]">
+                  {achievement.progress} / {achievement.target}
+                </span>
+                <span className="hidden lg:inline-flex shrink-0">{statusBadge}</span>
+              </div>
             </div>
           </div>
         )}

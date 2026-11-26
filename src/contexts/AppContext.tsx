@@ -9,11 +9,9 @@ import React, {
 } from 'react';
 import {
   ActiveSessionRuntime,
-  ActiveSessionState,
   AchievementStatus,
   ChatConversation,
   ChatMessage,
-  DeviceConnectionStatus,
   DeviceState,
   FocusSession,
   Language,
@@ -25,7 +23,6 @@ import {
   UserPreferences,
   UserProfile,
 } from '../types';
-import { DEMO_MODE_ENABLED, isDemoAccount } from '../config/demoConfig';
 import { COPY, CopyDictionary } from '../data/i18n';
 import {
   calculateStreakInfo,
@@ -36,14 +33,13 @@ import {
 import { appendUniqueNotification, pruneNotificationsByRetention } from '../utils/notifications';
 import { sessionService } from '../services/sessionService';
 import { aiService } from '../services/aiService';
-import { authService, SimulatedTokenRecord } from '../services/authService';
+import { authService, AuthTokenRecord } from '../services/authService';
 import {
   authStorage,
   createDisconnectedRealDeviceState,
   STORAGE_KEYS,
   UserAppDataRecord,
 } from '../services/authStorage';
-import { deviceService } from '../services/deviceService';
 import {
   createLanguageTransitionController,
   LanguageTransitionPhase,
@@ -53,7 +49,6 @@ interface AppContextValue {
   // Auth
   currentUser: UserProfile | null;
   allAccountEmails: string[];
-  loginDemoUser: (email: string) => boolean;
   loginWithEmail: (
     email: string,
     password: string,
@@ -69,15 +64,15 @@ interface AppContextValue {
   logout: () => void;
   rememberedEmail: string;
 
-  // Simulated Verification & Password Reset
-  authTokens: Record<string, SimulatedTokenRecord>;
+  // Verification & Password Reset
+  authTokens: Record<string, AuthTokenRecord>;
   latestVerificationTokenForUser: string | null;
-  requestPasswordReset: (email: string) => SimulatedTokenRecord;
+  requestPasswordReset: (email: string) => AuthTokenRecord;
   consumePasswordReset: (
     token: string,
     newPassword: string
   ) => Promise<{ ok: boolean; reason?: 'not_found' | 'already_used' | 'expired' | 'not_registered' }>;
-  resendVerificationEmail: () => SimulatedTokenRecord | null;
+  resendVerificationEmail: () => AuthTokenRecord | null;
   verifyEmailToken: (
     token: string
   ) => { ok: boolean; reason?: 'not_found' | 'already_used' | 'expired' };
@@ -94,20 +89,9 @@ interface AppContextValue {
     major?: string;
     email?: string;
   }) => { ok: boolean; error?: string; verificationToken?: string };
-  resetDemoData: () => void;
 
-  // Device Simulation
+  // Device
   device: DeviceState;
-  setDeviceConnected: (connected: boolean) => void;
-  setDeviceConnectionStatus: (status: DeviceConnectionStatus) => void;
-  setPhoneDocked: (docked: boolean) => void;
-  setUserPresent: (present: boolean) => void;
-  setAmbientLightLux: (lux: number) => void;
-  setLampOn: (on: boolean) => void;
-  setLampBrightness: (brightness: number) => void;
-  setLampColorTemp: (kelvin: number) => void;
-  setDndActive: (dnd: boolean) => void;
-  syncDeviceNow: (simulateFailure?: boolean) => void;
 
   // Focus Session Engine
   activeSession: ActiveSessionRuntime | null;
@@ -116,13 +100,6 @@ interface AppContextValue {
   endFocusSessionManually: () => void;
   saveSessionReflection: (sessionId: string, reflection: string) => void;
   clearLastCompletedSession: () => void;
-  simulatePhoneLift: () => void;
-  simulatePhoneReturn: () => void;
-  simulateUserAway: () => void;
-  simulateUserReturn: () => void;
-  simulateBleDisconnect: () => void;
-  simulateBleReconnect: () => void;
-  simulateCompleteSessionNow: () => void;
 
   // Sessions, Gamification & Metrics
   sessions: FocusSession[];
@@ -183,13 +160,13 @@ function playGentleCompletionCue() {
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const initialSession = useMemo(() => authStorage.loadActiveUserSession(DEMO_MODE_ENABLED), []);
+  const initialSession = useMemo(() => authStorage.loadActiveUserSession(), []);
 
   const [activeAccount, setActiveAccount] = useState<UserAppDataRecord | null>(
     () => initialSession?.userData ?? null
   );
   const [allAccountEmails, setAllAccountEmails] = useState<string[]>(() =>
-    authStorage.getAllKnownEmails(DEMO_MODE_ENABLED)
+    authStorage.getAllKnownEmails()
   );
   const [rememberedEmail, setRememberedEmail] = useState<string>(() => {
     try {
@@ -198,7 +175,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return '';
     }
   });
-  const [authTokens, setAuthTokens] = useState<Record<string, SimulatedTokenRecord>>(() =>
+  const [authTokens, setAuthTokens] = useState<Record<string, AuthTokenRecord>>(() =>
     authStorage.loadAuthTokens()
   );
   const [activeSession, setActiveSession] = useState<ActiveSessionRuntime | null>(
@@ -213,10 +190,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
   const [toasts, setToasts] = useState<ToastNotice[]>([]);
 
-  const reconnectTimerRef = useRef<number | null>(null);
-
   const currentUser = activeAccount?.profile ?? null;
-  const isDemoSession = Boolean(DEMO_MODE_ENABLED && currentUser && isDemoAccount(currentUser));
   const selectedLanguage: Language = currentUser?.preferences.language ?? guestLanguage;
   const [renderedLanguage, setRenderedLanguage] = useState<Language>(selectedLanguage);
   const [languagePhase, setLanguagePhase] = useState<LanguageTransitionPhase>('idle');
@@ -282,7 +256,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persist active user isolated data record whenever it changes
   useEffect(() => {
     if (!activeAccount) return;
-    authStorage.saveUserAppData(activeAccount, DEMO_MODE_ENABLED);
+    authStorage.saveUserAppData(activeAccount);
   }, [activeAccount]);
 
   // Persist active session pointer + active timer runtime
@@ -316,14 +290,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [theme]);
 
-  useEffect(() => {
-    return () => {
-      if (reconnectTimerRef.current !== null) {
-        window.clearTimeout(reconnectTimerRef.current);
-      }
-    };
-  }, []);
-
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
@@ -344,26 +310,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     },
     []
-  );
-
-  const enqueueOrDeliverNotification = useCallback(
-    (item: NotificationItem, bypassFocusMute = false) => {
-      if (!activeAccount) return;
-      if (activeSession && !bypassFocusMute) {
-        setQueuedNotifications((prev) => appendUniqueNotification(prev, item));
-        return;
-      }
-      mutateActiveAccount((acc) => {
-        if (!acc.profile.preferences.notificationsEnabled) return acc;
-        const withNew = appendUniqueNotification(acc.notifications, item);
-        const pruned = pruneNotificationsByRetention(
-          withNew,
-          acc.profile.preferences.notificationRetention
-        );
-        return { ...acc, notifications: pruned };
-      });
-    },
-    [activeAccount, activeSession, mutateActiveAccount]
   );
 
   // Derived gamification state (strictly scoped to current activeAccount)
@@ -567,17 +513,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [isSessionActive]);
 
   // Auth Actions
-  const loginDemoUser = useCallback((email: string): boolean => {
-    if (!DEMO_MODE_ENABLED) return false;
-    const demoData = authStorage.authenticateDemoQuick({ email, demoEnabled: DEMO_MODE_ENABLED });
-    if (!demoData) return false;
-    setActiveSession(null);
-    setLastCompletedSession(null);
-    setQueuedNotifications([]);
-    setActiveAccount(demoData);
-    return true;
-  }, []);
-
   const loginWithEmail = useCallback(
     async (
       email: string,
@@ -587,7 +522,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const res = await authStorage.authenticateWithCredentials({
         email,
         password,
-        demoEnabled: DEMO_MODE_ENABLED,
       });
 
       if (!res.ok) {
@@ -633,7 +567,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         email,
         password,
         language: selectedLanguage,
-        demoEnabled: DEMO_MODE_ENABLED,
       });
 
       if (!res.ok) {
@@ -655,13 +588,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       }
 
-      setAllAccountEmails(authStorage.getAllKnownEmails(DEMO_MODE_ENABLED));
+      setAllAccountEmails(authStorage.getAllKnownEmails());
       return { ok: true, email: res.authRecord.email };
     },
     [selectedLanguage]
   );
 
-  const requestPasswordReset = useCallback((email: string): SimulatedTokenRecord => {
+  const requestPasswordReset = useCallback((email: string): AuthTokenRecord => {
     const tokenRec = authService.createResetToken(email);
     setAuthTokens((prev) => ({
       ...prev,
@@ -698,7 +631,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [authTokens]
   );
 
-  const resendVerificationEmail = useCallback((): SimulatedTokenRecord | null => {
+  const resendVerificationEmail = useCallback((): AuthTokenRecord | null => {
     if (!currentUser) return null;
     const tokenRec = currentUser.pendingEmail
       ? authService.createEmailChangeToken(currentUser.email, currentUser.pendingEmail)
@@ -729,10 +662,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (activeAccount && activeAccount.profile.email === record.email) {
         if (record.kind === 'change_email' && record.newEmail) {
           const nextEmail = record.newEmail;
-          if (activeAccount.accountType === 'registered') {
-            authStorage.updateRegisteredProfileMeta(activeAccount.userId, { email: nextEmail });
-            setAllAccountEmails(authStorage.getAllKnownEmails(DEMO_MODE_ENABLED));
-          }
+          authStorage.updateRegisteredProfileMeta(activeAccount.userId, { email: nextEmail });
+          setAllAccountEmails(authStorage.getAllKnownEmails());
           mutateActiveAccount((acc) => ({
             ...acc,
             profile: {
@@ -847,7 +778,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const emailChanged = Boolean(requestedEmail && requestedEmail !== currentUser.email);
 
       if (emailChanged && requestedEmail) {
-        const known = authStorage.getAllKnownEmails(DEMO_MODE_ENABLED);
+        const known = authStorage.getAllKnownEmails();
         if (known.includes(requestedEmail)) {
           return {
             ok: false,
@@ -862,13 +793,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const nextName = updates.name !== undefined ? updates.name.trim() : currentUser.name;
       const nextEmail = emailChanged && requestedEmail ? requestedEmail : currentUser.email;
 
-      if (activeAccount.accountType === 'registered') {
-        authStorage.updateRegisteredProfileMeta(activeAccount.userId, {
-          fullName: nextName,
-          email: nextEmail,
-        });
-        setAllAccountEmails(authStorage.getAllKnownEmails(DEMO_MODE_ENABLED));
-      }
+      authStorage.updateRegisteredProfileMeta(activeAccount.userId, {
+        fullName: nextName,
+        email: nextEmail,
+      });
+      setAllAccountEmails(authStorage.getAllKnownEmails());
 
       mutateActiveAccount((acc) => ({
         ...acc,
@@ -886,168 +815,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [activeAccount, currentUser, language, mutateActiveAccount]
   );
 
-  const resetDemoData = useCallback(() => {
-    if (!DEMO_MODE_ENABLED || !currentUser || !isDemoAccount(currentUser)) {
-      return;
-    }
-    const freshDemo = authStorage.resetDemoUserDataset(currentUser.id, DEMO_MODE_ENABLED);
-    if (!freshDemo) return;
-    setActiveSession(null);
-    setLastCompletedSession(null);
-    setQueuedNotifications([]);
-    setActiveAccount(freshDemo);
-    showToast(
-      'info',
-      language === 'id'
-        ? 'Data demonstrasi akun demo telah dikembalikan ke kondisi awal.'
-        : 'Demonstration account data has been reset to initial defaults.'
-    );
-  }, [currentUser, language, showToast]);
-
-  // Device Simulation controls (strictly restricted to demo accounts when demo mode is enabled)
-  const setDeviceConnectionStatus = useCallback(
-    (status: DeviceConnectionStatus) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.setConnectionStatus(acc.device, status, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setDeviceConnected = useCallback(
-    (connected: boolean) => {
-      if (!isDemoSession) return;
-      setDeviceConnectionStatus(connected ? 'Connected' : 'Disconnected');
-    },
-    [isDemoSession, setDeviceConnectionStatus]
-  );
-
-  const setPhoneDocked = useCallback(
-    (docked: boolean) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { phoneDocked: docked }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setUserPresent = useCallback(
-    (present: boolean) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { userPresent: present }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setAmbientLightLux = useCallback(
-    (lux: number) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { ambientLightLux: lux }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setLampOn = useCallback(
-    (lampOn: boolean) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { lampOn }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setLampBrightness = useCallback(
-    (lampBrightness: number) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { lampBrightness }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setLampColorTemp = useCallback(
-    (lampColorTempK: number) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { lampColorTempK }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const setDndActive = useCallback(
-    (dndActive: boolean) => {
-      if (!isDemoSession) return;
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: deviceService.applyPatch(acc.device, { dndActive }, true),
-      }));
-    },
-    [isDemoSession, mutateActiveAccount]
-  );
-
-  const syncDeviceNow = useCallback(
-    (simulateFailure = false) => {
-      if (!isDemoSession) return;
-      if (simulateFailure) {
-        mutateActiveAccount((acc) => ({
-          ...acc,
-          device: {
-            ...acc.device,
-            syncFailed: true,
-          },
-        }));
-        showToast(
-          'warning',
-          language === 'id'
-            ? 'Sinkronisasi perangkat gagal (simulasi). Ketuk Coba Lagi.'
-            : 'Simulated device sync failed. Tap Retry Sync to recover.'
-        );
-        return;
-      }
-      mutateActiveAccount((acc) => ({
-        ...acc,
-        device: {
-          ...acc.device,
-          syncFailed: false,
-          connected: true,
-          connectionStatus: 'Connected',
-          connectionType: 'BLE 5.3 (Simulated)',
-          lastSyncAt: new Date().toISOString(),
-        },
-      }));
-      setToasts((prev) => prev.filter((t) => t.tone !== 'warning'));
-      showToast(
-        'success',
-        language === 'id'
-          ? 'Telemetri FocusLamp FL-01 berhasil disinkronkan.'
-          : 'FocusLamp FL-01 telemetry synced.'
-      );
-    },
-    [isDemoSession, language, mutateActiveAccount, showToast]
-  );
-
   // Focus Session controls
   const startFocusSession = useCallback(
     (plannedMinutes: number, subjectTag: string): boolean => {
       if (!activeAccount) return false;
 
-      if (isDemoSession && !activeAccount.device.phoneDocked) {
+      if (activeAccount.device.connected && !activeAccount.device.phoneDocked) {
         return false;
       }
 
@@ -1056,36 +829,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const safeMins = Math.min(60, Math.max(1, Math.round(plannedMinutes)));
       const nowIso = new Date().toISOString();
 
-      if (isDemoSession) {
-        setActiveSession({
-          sessionId: `sess-${Date.now()}`,
-          plannedMinutes: safeMins,
-          startedAtIso: nowIso,
-          subjectTag: subjectTag.trim() || 'General Study',
-          state: activeAccount.device.connected ? 'FOCUSING' : 'CONNECTION_LOST',
-          remainingSeconds: safeMins * 60,
-          actualFocusSeconds: 0,
-          awaySeconds: 0,
-          awayEvents: 0,
-          phoneLiftEvents: 0,
-          disconnectEvents: activeAccount.device.connected ? 0 : 1,
-          liftCountdownSeconds: null,
-          pausedByAway: false,
-        });
-        mutateActiveAccount((acc) => ({
-          ...acc,
-          device: {
-            ...acc.device,
-            lampOn: true,
-            dndActive: true,
-            userPresent: true,
-            lastSyncAt: nowIso,
-          },
-        }));
-        return true;
-      }
-
-      // Registered account: genuine software study timer unless real companion hardware is paired
       setActiveSession({
         sessionId: `sess-${Date.now()}`,
         plannedMinutes: safeMins,
@@ -1103,7 +846,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       return true;
     },
-    [activeAccount, isDemoSession, mutateActiveAccount]
+    [activeAccount]
   );
 
   const endFocusSessionManually = useCallback(() => {
@@ -1129,143 +872,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const clearLastCompletedSession = useCallback(() => {
     setLastCompletedSession(null);
   }, []);
-
-  // Hardware Simulation triggers during active focus session (demo accounts only)
-  const simulatePhoneLift = useCallback(() => {
-    if (!isDemoSession || !activeSession || !currentUser) return;
-    setPhoneDocked(false);
-    setActiveSession((curr) => {
-      if (!curr) return null;
-      return {
-        ...curr,
-        state: 'PHONE_LIFTED',
-        phoneLiftEvents: curr.phoneLiftEvents + 1,
-        liftCountdownSeconds: currentUser.preferences.phoneLiftToleranceSeconds,
-      };
-    });
-    enqueueOrDeliverNotification({
-      id: `notif-lift-${Date.now()}`,
-      eventId: `evt-lift-${activeSession.sessionId}-${activeSession.phoneLiftEvents + 1}`,
-      category: 'Device',
-      titleEn: 'Phone lifted from dock during session',
-      titleId: 'Ponsel diangkat dari dock saat sesi berlangsung',
-      messageEn: 'Returned to notification queue while Focus Mode was active.',
-      messageId: 'Disimpan ke antrean notifikasi saat Mode Fokus aktif.',
-      timestampIso: new Date().toISOString(),
-      read: false,
-      groupKey: 'dock_events',
-    });
-  }, [activeSession, currentUser, enqueueOrDeliverNotification, isDemoSession, setPhoneDocked]);
-
-  const simulatePhoneReturn = useCallback(() => {
-    if (!isDemoSession || !activeSession) return;
-    setPhoneDocked(true);
-    setActiveSession((curr) => {
-      if (!curr) return null;
-      const nextState: ActiveSessionState = curr.pausedByAway
-        ? 'AWAY'
-        : activeAccount?.device.connected
-        ? 'FOCUSING'
-        : 'CONNECTION_LOST';
-      return {
-        ...curr,
-        state: nextState,
-        liftCountdownSeconds: null,
-      };
-    });
-  }, [activeAccount?.device.connected, activeSession, isDemoSession, setPhoneDocked]);
-
-  const simulateUserAway = useCallback(() => {
-    if (!isDemoSession || !activeSession) return;
-    setUserPresent(false);
-    setActiveSession((curr) => {
-      if (!curr) return null;
-      return {
-        ...curr,
-        state: 'AWAY',
-        awayEvents: curr.awayEvents + 1,
-        pausedByAway: true,
-      };
-    });
-  }, [activeSession, isDemoSession, setUserPresent]);
-
-  const simulateUserReturn = useCallback(() => {
-    if (!isDemoSession || !activeSession) return;
-    setUserPresent(true);
-    setActiveSession((curr) => {
-      if (!curr) return null;
-      return {
-        ...curr,
-        state: activeAccount?.device.phoneDocked === false ? 'PHONE_LIFTED' : 'FOCUSING',
-        pausedByAway: false,
-      };
-    });
-  }, [activeAccount?.device.phoneDocked, activeSession, isDemoSession, setUserPresent]);
-
-  const simulateBleDisconnect = useCallback(() => {
-    if (!isDemoSession || !activeSession) return;
-    setDeviceConnected(false);
-    setActiveSession((curr) => {
-      if (!curr) return null;
-      return {
-        ...curr,
-        state: 'CONNECTION_LOST',
-        disconnectEvents: curr.disconnectEvents + 1,
-      };
-    });
-    enqueueOrDeliverNotification({
-      id: `notif-ble-${Date.now()}`,
-      eventId: `evt-ble-drop-${activeSession.sessionId}-${activeSession.disconnectEvents + 1}`,
-      category: 'Device',
-      titleEn: 'Bluetooth link lost (session continued)',
-      titleId: 'Koneksi Bluetooth terputus (sesi tetap berjalan)',
-      messageEn: 'FocusLamp continued tracking without terminating your study block.',
-      messageId: 'FocusLamp tetap melanjutkan pelacakan tanpa menghentikan sesi Anda.',
-      timestampIso: new Date().toISOString(),
-      read: false,
-      groupKey: 'ble_events',
-    });
-  }, [activeSession, enqueueOrDeliverNotification, isDemoSession, setDeviceConnected]);
-
-  const simulateBleReconnect = useCallback(() => {
-    if (!isDemoSession || !activeSession) return;
-    setDeviceConnectionStatus('Reconnecting');
-    setActiveSession((curr) => {
-      if (!curr) return null;
-      return {
-        ...curr,
-        state: 'RECONNECTING',
-      };
-    });
-    if (reconnectTimerRef.current !== null) {
-      window.clearTimeout(reconnectTimerRef.current);
-    }
-    reconnectTimerRef.current = window.setTimeout(() => {
-      reconnectTimerRef.current = null;
-      setDeviceConnectionStatus('Connected');
-      setActiveSession((curr) => {
-        if (!curr) return null;
-        return {
-          ...curr,
-          state: curr.pausedByAway
-            ? 'AWAY'
-            : curr.liftCountdownSeconds !== null
-            ? 'PHONE_LIFTED'
-            : 'FOCUSING',
-        };
-      });
-    }, 900);
-  }, [activeSession, isDemoSession, setDeviceConnectionStatus]);
-
-  const simulateCompleteSessionNow = useCallback(() => {
-    if (!isDemoSession || !activeSession) return;
-    const completedRuntime: ActiveSessionRuntime = {
-      ...activeSession,
-      remainingSeconds: 0,
-      actualFocusSeconds: activeSession.plannedMinutes * 60,
-    };
-    finalizeActiveSession(completedRuntime, 'Completed');
-  }, [activeSession, finalizeActiveSession, isDemoSession]);
 
   // Notification Actions
   const notifications = activeAccount?.notifications ?? [];
@@ -1324,7 +930,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ? `Halo ${firstName}. Mulai obrolan baru di FocusMate AI—tanyakan pola fokus, durasi blok belajar, atau pemulihan streak Anda.`
           : `Hi ${firstName}. Started a fresh FocusMate AI thread—ask about your focus trends, block sizing, or streak pacing anytime.`,
       timestampIso: nowIso,
-      ...(isDemoSession ? { simulatedLabel: true } : {}),
       status: 'sent',
     };
     const nextConv: ChatConversation = {
@@ -1339,7 +944,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       conversations: [nextConv, ...acc.conversations],
       activeConversationId: newId,
     }));
-  }, [currentUser, isDemoSession, language, mutateActiveAccount]);
+  }, [currentUser, language, mutateActiveAccount]);
 
   const sendAiMessage = useCallback(
     async (content: string, overrideConvId?: string) => {
@@ -1518,7 +1123,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value: AppContextValue = {
     currentUser,
     allAccountEmails,
-    loginDemoUser,
     loginWithEmail,
     registerUser,
     completeOnboarding,
@@ -1538,31 +1142,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     copy,
     updatePreferences,
     updateProfileInfo,
-    resetDemoData,
     device,
-    setDeviceConnected,
-    setDeviceConnectionStatus,
-    setPhoneDocked,
-    setUserPresent,
-    setAmbientLightLux,
-    setLampOn,
-    setLampBrightness,
-    setLampColorTemp,
-    setDndActive,
-    syncDeviceNow,
     activeSession,
     lastCompletedSession,
     startFocusSession,
     endFocusSessionManually,
     saveSessionReflection,
     clearLastCompletedSession,
-    simulatePhoneLift,
-    simulatePhoneReturn,
-    simulateUserAway,
-    simulateUserReturn,
-    simulateBleDisconnect,
-    simulateBleReconnect,
-    simulateCompleteSessionNow,
     sessions,
     totalXp,
     levelInfo,

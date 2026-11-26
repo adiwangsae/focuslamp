@@ -79,8 +79,8 @@ export const PasswordResetPage: React.FC = () => {
               </h1>
               <p className="fl-type-support text-[var(--fl-muted)]">
                 {language === 'id'
-                  ? 'Kata sandi baru telah disimpan pada simulasi akun Anda dan token kini tidak berlaku lagi.'
-                  : 'Your new password has been applied in this simulated session and the single-use token is now invalidated.'}
+                  ? 'Kata sandi baru telah disimpan dan token pemulihan kini tidak berlaku lagi.'
+                  : 'Your new password has been saved and the single-use recovery token is now invalidated.'}
               </p>
               <Link to="/login" className="fl-btn-primary w-full lg:w-auto">
                 <span className="fl-lang">{copy.auth.backToLogin}</span>

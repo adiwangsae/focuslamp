@@ -53,8 +53,8 @@ export const ForgotPasswordPage: React.FC = () => {
                 <div className="fl-card-soft p-3.5 text-xs">
                   <p className="font-medium text-[var(--fl-muted)]">
                     {language === 'id'
-                      ? 'Tautan Reset Simulasi (berlaku 30 menit, 1x pakai):'
-                      : 'Simulated Reset Link (30m expiry, single-use):'}
+                      ? 'Tautan Reset (berlaku 30 menit, 1x pakai):'
+                      : 'Password Reset Link (30m expiry, single-use):'}
                   </p>
                   <Link
                     to={`/reset-password?token=${encodeURIComponent(generatedToken)}`}

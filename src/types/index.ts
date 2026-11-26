@@ -47,7 +47,7 @@ export interface UserPreferences {
   phoneLiftToleranceSeconds: number;
 }
 
-export type AccountType = 'registered' | 'demo';
+export type AccountType = 'registered';
 
 export interface UserProfile {
   id: string;
@@ -61,7 +61,6 @@ export interface UserProfile {
   avatarUrl: string;
   joinedAt: string;
   createdAtIso: string;
-  isDemo: boolean;
   onboardingCompleted: boolean;
   welcomeGreetingSeen?: boolean;
   preferences: UserPreferences;
@@ -73,7 +72,7 @@ export interface DeviceState {
   firmwareVersion: string;
   connected: boolean;
   connectionStatus: DeviceConnectionStatus;
-  connectionType: 'BLE 5.3 (Simulated)' | 'Hardware Companion' | 'Offline';
+  connectionType: 'Hardware Companion' | 'Offline';
   signalStrengthDbm: number;
   lampOn: boolean;
   lampBrightness: number; // 0 - 100
@@ -188,16 +187,13 @@ export interface AIInsight {
 }
 
 export interface MlPredictionSummary {
-  isDemonstration: boolean;
   available: boolean;
-  predictedClassEn: string;
-  predictedClassId: string;
-  confidenceScore: number | null; // Null when not supplied by a trained model
+  reasonEn: string;
+  reasonId: string;
+  confidenceScore: number | null;
   relevantInputsEn: string[];
   relevantInputsId: string[];
   timestampIso: string;
-  modelInfoEn: string;
-  modelInfoId: string;
   sampleCount: number;
 }
 
@@ -206,7 +202,6 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestampIso: string;
-  simulatedLabel?: boolean;
   status?: 'sent' | 'error';
   retryPrompt?: string;
   errorCode?: string;

@@ -70,7 +70,6 @@ export const sessionService = {
       avatarUrl: '',
       joinedAt: toLocalDateString(new Date()),
       createdAtIso: nowIso,
-      isDemo: false,
       onboardingCompleted: true,
       welcomeGreetingSeen: false,
       preferences: {

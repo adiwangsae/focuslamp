@@ -28,8 +28,8 @@ export const LandingPage: React.FC = () => {
       title: language === 'id' ? 'Integrasi Perangkat Pintar' : 'Smart Device Integration',
       body:
         language === 'id'
-          ? 'Telemetri simulasi FocusLamp FL-01 memantau penempatan dock ponsel, cahaya sekitar, dan koneksi ulang Bluetooth yang tangguh tanpa menghentikan sesi aktif.'
-          : 'Simulated FocusLamp FL-01 telemetry tracks phone dock placement, ambient light levels, and resilient Bluetooth reconnection without terminating active sessions.',
+          ? 'Integrasi perangkat keras FocusLamp FL-01 memantau penempatan dock ponsel, cahaya sekitar, dan koneksi ulang Bluetooth yang tangguh tanpa menghentikan sesi aktif.'
+          : 'FocusLamp FL-01 companion integration tracks phone dock placement, ambient light levels, and resilient Bluetooth reconnection without terminating active sessions.',
     },
     {
       num: '03',
@@ -74,8 +74,8 @@ export const LandingPage: React.FC = () => {
       title: language === 'id' ? 'Mulai sesi fokus' : 'Start a focus session',
       desc:
         language === 'id'
-          ? 'Pilih preset atau durasi blok kustom (1–60 menit pada prototipe firmware) dan tentukan topik opsional.'
-          : 'Pick a preset or custom study block (1–60 minutes in the firmware prototype) and set an optional topic.',
+          ? 'Pilih preset atau durasi blok kustom (1–60 menit) dan tentukan topik opsional.'
+          : 'Pick a preset or custom study block (1–60 minutes) and set an optional topic.',
     },
     {
       step: '03',
@@ -97,7 +97,7 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[var(--fl-bg)] text-[var(--fl-text)]">
-      <PublicHeader showLogin={false} />
+      <PublicHeader showLogin={false} primaryAction="login" />
 
       {/* 1. Hero Section — Abstract Liquid Ultramarine Composition + Editorial 2-Column Split */}
       <section className="fl-liquid-field relative overflow-hidden py-10 sm:py-14 lg:py-20">
@@ -137,20 +137,12 @@ export const LandingPage: React.FC = () => {
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
                 <Link to="/register" className="fl-btn-primary">
-                  <span>{copy.landing.primaryCta}</span>
+                  <span className="fl-lang">{copy.landing.primaryCta}</span>
                   <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                 </Link>
                 <a href="#features" className="fl-btn-secondary">
                   <span className="fl-lang">{copy.landing.secondaryCta}</span>
                 </a>
-                <Link
-                  to="/auth"
-                  className="fl-btn fl-type-nav inline-flex min-h-[44px] items-center rounded-full px-3.5 text-[var(--fl-primary)] hover:bg-[var(--fl-soft-blue)]/80 whitespace-nowrap"
-                >
-                  <span className="fl-lang">
-                    {language === 'id' ? 'Masuk / Akun Demo' : 'Sign In / Demo Profiles'}
-                  </span>
-                </Link>
               </div>
             </motion.div>
 
@@ -224,12 +216,12 @@ export const LandingPage: React.FC = () => {
                   {language === 'id' ? 'Model Perangkat' : 'Hardware Model'}
                 </p>
                 <p className="fl-type-card mt-1.5 text-[var(--fl-text)] tabular-nums">
-                  FocusLamp FL-01 (Sim)
+                  FocusLamp FL-01
                 </p>
               </div>
               <div className="px-5 py-5 text-center">
                 <p className="fl-type-overline text-[var(--fl-muted)]">
-                  {language === 'id' ? 'Rentang Blok Firmware' : 'Firmware Block Range'}
+                  {language === 'id' ? 'Rentang Blok Fokus' : 'Focus Block Range'}
                 </p>
                 <p className="fl-type-card mt-1.5 text-[var(--fl-text)] tabular-nums">
                   {language === 'id' ? '1–60 Menit' : '1–60 Minutes'}
@@ -591,8 +583,8 @@ export const LandingPage: React.FC = () => {
             </div>
             <p className="fl-type-support text-[var(--fl-muted)]">
               {language === 'id'
-                ? 'Transparansi Prototipe: Aplikasi web ini menjalankan simulasi sensor/BLE, wawasan deterministik, dan akun demo langsung di peramban, siap terhubung ke backend FastAPI.'
-                : 'Prototype Transparency: This web application runs simulated BLE/sensor states, deterministic insights, and mock accounts locally in the browser, paired with a FastAPI-ready backend architecture for future deployment.'}
+                ? 'Privasi & Kejujuran Metrik: FocusLamp menghitung durasi belajar nyata dari sesi yang Anda jalankan sendiri, menjaga data akun terpisah untuk setiap pengguna, dan hanya menampilkan telemetri perangkat saat lampu FL-01 benar-benar terhubung.'
+                : 'Honest Metrics & Privacy: FocusLamp computes study statistics strictly from your own logged sessions, keeps each registered account isolated, and only reports hardware sensor readings when an FL-01 lamp is physically connected.'}
             </p>
           </div>
 
@@ -611,12 +603,12 @@ export const LandingPage: React.FC = () => {
                 <LampDesk className="h-5 w-5" strokeWidth={1.6} aria-hidden="true" />
               </div>
               <h3 className="fl-type-section text-white">
-                {language === 'id' ? 'Eksplorasi Prototipe Interaktif' : 'Explore the Interactive Prototype'}
+                {language === 'id' ? 'Mulai Kebiasaan Fokus yang Konsisten' : 'Start Building Steady Focus Habits'}
               </h3>
               <p className="fl-type-body mx-auto mt-2.5 max-w-md text-white/85">
                 {language === 'id'
-                  ? 'Buat sesi mahasiswa baru atau langsung gunakan profil demo siap pakai.'
-                  : 'Create a new student session or inspect pre-populated demo profiles immediately.'}
+                  ? 'Buat akun FocusLamp pribadi Anda atau masuk untuk melanjutkan sesi belajar Anda.'
+                  : 'Create your personal FocusLamp account or sign in to continue your study workspace.'}
               </p>
               <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
                 <Link

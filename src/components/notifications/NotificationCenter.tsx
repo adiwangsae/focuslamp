@@ -181,7 +181,7 @@ export const NotificationCenter: React.FC = () => {
                 ))}
               </div>
 
-              <div className="fl-scrollbar max-h-[420px] overflow-y-auto overflow-x-hidden divide-y divide-[var(--fl-border)]/70">
+              <div className="fl-scrollbar max-h-[420px] overflow-y-auto overflow-x-hidden overscroll-y-none divide-y divide-[var(--fl-border)]/70">
                 {detailItem ? (
                   <div className="p-5 space-y-3">
                     <button

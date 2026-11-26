@@ -23,7 +23,6 @@ import {
   StaggerItem,
 } from '../components/motion/MotionPrimitives';
 import { EmptyState, StatusBadge } from '../components/common/StatePrimitives';
-import { DEMO_MODE_ENABLED, isDemoAccount } from '../config/demoConfig';
 import { useApp } from '../contexts/AppContext';
 import { mlService } from '../services/mlService';
 import { FocusSession, SessionStatus } from '../types';
@@ -53,8 +52,7 @@ const DARK_STATUS_COLORS: Record<SessionStatus, string> = {
 };
 
 export const DashboardPage: React.FC = () => {
-  const { currentUser, sessions, streakInfo, copy, language, theme, showToast } = useApp();
-  const isDemo = DEMO_MODE_ENABLED && isDemoAccount(currentUser);
+  const { sessions, streakInfo, copy, language, theme, showToast } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | SessionStatus>('All');
@@ -72,7 +70,7 @@ export const DashboardPage: React.FC = () => {
   );
   const statusDist = useMemo(() => buildCompletionDistribution(sessions), [sessions]);
   const frequencyData = useMemo(() => buildSessionFrequencyData(sessions), [sessions]);
-  const mlSummary = useMemo(() => mlService.generateDemoPrediction(sessions), [sessions]);
+  const mlSummary = useMemo(() => mlService.getMlStatus(sessions), [sessions]);
 
   const filteredSessions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -148,12 +146,11 @@ export const DashboardPage: React.FC = () => {
   );
 
   const showSensorSummary =
-    isDemo ||
     metrics.totalAwayEvents > 0 ||
     metrics.totalPhoneLiftEvents > 0 ||
     metrics.totalDisconnectEvents > 0;
 
-  if (!isDemo && sessions.length === 0) {
+  if (sessions.length === 0) {
     return (
       <StaggerGrid className="space-y-6">
         <StaggerItem className="flex flex-col items-center justify-between gap-3 text-center lg:flex-row lg:items-end lg:text-left">
@@ -385,15 +382,11 @@ export const DashboardPage: React.FC = () => {
         </div>
       </StaggerItem>
 
-      {/* Monthly Progress & Demo-only ML Demonstration Results */}
+      {/* Monthly Progress & Honest ML Status Card */}
       <StaggerItem>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Monthly Progress (Rolling 4 Weeks) */}
-          <section
-            className={`fl-card p-6 ${
-              isDemo ? 'lg:col-span-7' : 'lg:col-span-12'
-            }`}
-          >
+          <section className="fl-card p-6 lg:col-span-7">
             <div className="flex flex-col items-center justify-between gap-2 text-center lg:flex-row lg:items-start lg:text-left">
               <div>
                 <h2 className="fl-type-card">{copy.dashboard.monthlyProgressTitle}</h2>
@@ -426,64 +419,49 @@ export const DashboardPage: React.FC = () => {
             </div>
           </section>
 
-          {/* ML Results (Demonstration Data — Demo accounts only) */}
-          {isDemo && (
-            <section
-              data-testid="dashboard-ml-demo-card"
-              className="fl-card-elevated flex flex-col justify-between p-5 text-center lg:col-span-5 lg:text-left"
-            >
-              <div>
-                <div className="flex flex-col items-center justify-between gap-2 lg:flex-row">
-                  <div className="flex items-center justify-center gap-2 lg:justify-start">
-                    <Brain
-                      className="h-4 w-4 text-[var(--fl-primary)]"
-                      strokeWidth={1.5}
-                      aria-hidden="true"
-                    />
-                    <h2 className="fl-type-card">{copy.dashboard.mlSectionTitle}</h2>
-                  </div>
-                  <StatusBadge tone="primary">{copy.common.demoDataBadge}</StatusBadge>
+          {/* Honest ML Availability Notice */}
+          <section
+            data-testid="dashboard-ml-status-card"
+            className="fl-card-elevated flex flex-col justify-between p-5 text-center lg:col-span-5 lg:text-left"
+          >
+            <div>
+              <div className="flex flex-col items-center justify-between gap-2 lg:flex-row">
+                <div className="flex items-center justify-center gap-2 lg:justify-start">
+                  <Brain
+                    className="h-4 w-4 text-[var(--fl-primary)]"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                  <h2 className="fl-type-card">{copy.dashboard.mlSectionTitle}</h2>
                 </div>
-
-                <div className="fl-card-soft mt-4 p-4">
-                  <p className="fl-type-label text-[var(--fl-muted)]">
-                    {language === 'id' ? 'Pola Belajar Terklasifikasi' : 'Classified Focus Pattern'}
-                  </p>
-                  <p className="fl-type-section mt-1 text-[var(--fl-primary)]">
-                    {language === 'id' ? mlSummary.predictedClassId : mlSummary.predictedClassEn}
-                  </p>
-                  <p className="fl-type-label mt-2 text-[var(--fl-muted)] tabular-nums">
-                    {language === 'id' ? 'Skor Kepercayaan' : 'Confidence Score'}:{' '}
-                    {mlSummary.confidenceScore !== null
-                      ? `${Math.round(mlSummary.confidenceScore * 100)}%`
-                      : language === 'id'
-                      ? 'Tidak ditampilkan (belum ada model terlatih)'
-                      : 'Not supplied (no live trained model)'}
-                  </p>
-                </div>
-
-                <div className="mt-3.5 space-y-1.5">
-                  <p className="fl-type-label text-[var(--fl-muted)]">
-                    {language === 'id' ? 'Input Data Relevan' : 'Relevant Session Inputs'}
-                  </p>
-                  <ul className="fl-type-support mx-auto inline-block space-y-1 text-left text-[var(--fl-text)] lg:mx-0 lg:block">
-                    {(language === 'id'
-                      ? mlSummary.relevantInputsId
-                      : mlSummary.relevantInputsEn
-                    ).map((item) => (
-                      <li key={item}>
-                        <span className="fl-lang">· {item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <StatusBadge tone="neutral">
+                  {language === 'id' ? 'Belum Tersedia' : 'Unavailable'}
+                </StatusBadge>
               </div>
 
-              <div className="fl-type-label mt-4 border-t border-[var(--fl-border)]/70 pt-3 text-[var(--fl-muted)]">
-                <p>{language === 'id' ? mlSummary.modelInfoId : mlSummary.modelInfoEn}</p>
+              <div className="fl-card-soft mt-4 p-4">
+                <p className="fl-type-support text-[var(--fl-text)]">
+                  {language === 'id' ? mlSummary.reasonId : mlSummary.reasonEn}
+                </p>
               </div>
-            </section>
-          )}
+
+              <div className="mt-3.5 space-y-1.5">
+                <p className="fl-type-label text-[var(--fl-muted)]">
+                  {language === 'id' ? 'Data Sesi Tercatat' : 'Recorded Session Inputs'}
+                </p>
+                <ul className="fl-type-support mx-auto inline-block space-y-1 text-left text-[var(--fl-text)] lg:mx-0 lg:block">
+                  {(language === 'id'
+                    ? mlSummary.relevantInputsId
+                    : mlSummary.relevantInputsEn
+                  ).map((item) => (
+                    <li key={item}>
+                      <span className="fl-lang">· {item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
         </div>
       </StaggerItem>
 
@@ -683,7 +661,7 @@ export const DashboardPage: React.FC = () => {
                     {Math.floor(selectedSession.actualFocusSeconds / 60)}m
                   </dd>
                 </div>
-                {(isDemo || selectedSession.awayEvents > 0 || selectedSession.phoneLiftEvents > 0) && (
+                {(selectedSession.awayEvents > 0 || selectedSession.phoneLiftEvents > 0) && (
                   <>
                     <div className="flex justify-between">
                       <dt className="text-[var(--fl-muted)]">

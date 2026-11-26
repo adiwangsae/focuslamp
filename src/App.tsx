@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Navigate, useLocation } from 'react-router-dom';
-import { AnimatePresence, MotionConfig } from 'motion/react';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { AppShell } from './components/navigation/AppShell';
 import { AuthSplitShell } from './components/auth/AuthSplitShell';
@@ -135,9 +135,15 @@ const AppRoutes: React.FC = () => {
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <AnimatePresence mode="wait" initial={false}>
         {isAppShellRoute ? (
-          <AnimatedPage key="__app_shell__">
+          <motion.div
+            key="__app_shell__"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
             <ProtectedAppLayout />
-          </AnimatedPage>
+          </motion.div>
         ) : isSplitAuthRoute ? (
           <AnimatedPage key="__auth_split__">
             <AuthSplitShell mode={location.pathname === '/register' ? 'register' : 'login'} />

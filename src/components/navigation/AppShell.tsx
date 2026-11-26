@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { BarChart3, ChevronRight, Cpu, Home, Play, Timer, Trophy, User } from 'lucide-react';
+import { BarChart3, Cpu, Home, Play, Timer, Trophy, User } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useApp } from '../../contexts/AppContext';
 import { FL_EASE_STANDARD } from '../../utils/motion';
+import { getUserInitials } from '../../utils/userAvatar';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 import { FloatingFocusMate } from '../ai/FloatingFocusMate';
 import { BrandLogoLink } from './BrandLogoLink';
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { copy, language, activeSession, achievements, setAiReturnPath } = useApp();
+  const { copy, language, currentUser, activeSession, achievements, setAiReturnPath } = useApp();
   const location = useLocation();
   const prefersReduced = useReducedMotion();
   const isFullAiPage = location.pathname === '/ai';
@@ -19,6 +20,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     new URLSearchParams(location.search).get('tab') === 'achievements';
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
+  const userInitials = getUserInitials(currentUser?.name);
+  const hasAvatarPhoto = Boolean(currentUser?.avatarUrl?.trim());
+  const isDesktopProfileActive = location.pathname === '/profile';
 
   useEffect(() => {
     if (location.pathname !== '/ai') {
@@ -26,17 +30,25 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     }
   }, [location.pathname, setAiReturnPath]);
 
-  // Exact 5 primary navigation items in exact order:
-  // 1. Focus, 2. Dashboard, 3. Home (emphasized), 4. Device, 5. Profile
-  const navItems = [
-    { to: '/focus', label: copy.nav.focus, icon: Timer, isHome: false },
-    { to: '/dashboard', label: copy.nav.dashboard, icon: BarChart3, isHome: false },
-    { to: '/home', label: copy.nav.home, icon: Home, isHome: true },
-    { to: '/device', label: copy.nav.device, icon: Cpu, isHome: false },
-    { to: '/profile', label: copy.nav.profile, icon: User, isHome: false },
+  // Desktop Sidebar Primary Navigation Order:
+  // 1. Home (Beranda), 2. Focus (Fokus), 3. Dashboard (Dasbor), 4. Device (Perangkat), plus 5. Profile (Profil) at bottom.
+  const desktopNavItems = [
+    { to: '/home', label: copy.nav.home, icon: Home },
+    { to: '/focus', label: copy.nav.focus, icon: Timer },
+    { to: '/dashboard', label: copy.nav.dashboard, icon: BarChart3 },
+    { to: '/device', label: copy.nav.device, icon: Cpu },
   ];
 
-  const activeNavIndex = navItems.findIndex((item) => location.pathname === item.to);
+  // Tablet & Mobile Bottom Navigation (preserved exact order: Focus, Dashboard, Home, Device, Profile)
+  const mobileNavItems = [
+    { to: '/focus', label: copy.nav.focus, icon: Timer },
+    { to: '/dashboard', label: copy.nav.dashboard, icon: BarChart3 },
+    { to: '/home', label: copy.nav.home, icon: Home },
+    { to: '/device', label: copy.nav.device, icon: Cpu },
+    { to: '/profile', label: copy.nav.profile, icon: User },
+  ];
+
+  const activeNavIndex = mobileNavItems.findIndex((item) => location.pathname === item.to);
 
   const achievementsLabel = language === 'id' ? 'Pencapaian' : 'Achievements';
 
@@ -61,14 +73,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     <div
       className={
         isFullAiPage
-          ? 'flex h-[100dvh] flex-col overflow-hidden bg-[var(--fl-bg)] text-[var(--fl-text)] pb-[7.25rem] lg:flex-row lg:pb-0'
-          : 'min-h-screen bg-[var(--fl-bg)] text-[var(--fl-text)] pb-36 lg:flex lg:pb-24'
+          ? 'flex h-[100dvh] w-full flex-col overflow-hidden overscroll-none bg-[var(--fl-bg)] text-[var(--fl-text)] lg:flex-row'
+          : 'flex h-[100dvh] w-full flex-col overflow-hidden overscroll-none bg-[var(--fl-bg)] text-[var(--fl-text)] lg:flex-row'
       }
     >
       {/* Desktop Minimalist Modern Sidebar (lg and up: >= 1024px) */}
       <aside
         aria-label="Workspace Sidebar"
-        className="hidden lg:flex lg:w-[248px] shrink-0 flex-col justify-between border-r border-[var(--fl-border)]/80 bg-[var(--fl-surface)] sticky top-0 h-[100dvh]"
+        className="hidden h-full shrink-0 flex-col justify-between border-r border-[var(--fl-border)]/80 bg-[var(--fl-surface)] lg:flex lg:w-[248px]"
       >
         <div className="flex flex-col px-4 pt-5 pb-4">
           <div className="px-2">
@@ -79,59 +91,39 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             <p className="fl-type-overline px-3 text-[var(--fl-muted)]">
               {language === 'id' ? 'Navigasi Utama' : 'Workspace'}
             </p>
-            <nav aria-label="Main Application" className="mt-2.5 flex flex-col gap-1">
-              {navItems.map((item) => {
+            <nav aria-label="Main Application" className="relative z-0 mt-2.5 flex flex-col gap-1">
+              {desktopNavItems.map((item) => {
                 const Icon = item.icon;
-                const active =
-                  item.to === '/profile'
-                    ? location.pathname === '/profile' && !isAchievementsView
-                    : location.pathname === item.to;
-
-                if (item.isHome) {
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      className={`fl-btn fl-type-nav relative flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2 transition-colors ${
-                        active
-                          ? 'bg-[#0F2557] font-semibold text-white shadow-xs dark:bg-[#8BA8FF] dark:text-[#0D1424]'
-                          : 'border border-[var(--fl-border)]/85 bg-[var(--fl-bg)] font-semibold text-[#0F2557] hover:bg-[var(--fl-soft-blue)] dark:text-[#8BA8FF]'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Icon
-                          className="h-[18px] w-[18px] shrink-0"
-                          strokeWidth={active ? 2 : 1.65}
-                          aria-hidden="true"
-                        />
-                        <span>{item.label}</span>
-                      </span>
-                    </NavLink>
-                  );
-                }
+                const active = location.pathname === item.to;
 
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    className={`fl-btn fl-type-nav relative flex min-h-[42px] items-center justify-between rounded-xl px-3.5 py-2 transition-colors ${
+                    data-testid={`desktop-nav-${item.to.slice(1)}`}
+                    aria-current={active ? 'page' : undefined}
+                    className={`fl-btn fl-type-nav relative z-0 isolate flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2 transition-colors duration-200 ${
                       active
-                        ? 'font-semibold text-[#0F2557] dark:text-[#8BA8FF]'
-                        : 'text-[var(--fl-muted)] hover:bg-[var(--fl-soft-blue)]/55 hover:text-[var(--fl-text)]'
+                        ? 'font-semibold text-white dark:text-[#0D1424]'
+                        : 'font-medium text-[var(--fl-muted)] hover:bg-[var(--fl-soft-blue)]/65 hover:text-[var(--fl-text)]'
                     }`}
                   >
                     {active && (
                       <motion.span
                         layoutId="fl-desktop-nav-active"
-                        transition={{ duration: 0.2, ease: FL_EASE_STANDARD }}
-                        className="absolute inset-0 -z-10 rounded-xl bg-[var(--fl-soft-blue)]"
+                        transition={
+                          prefersReduced
+                            ? { duration: 0 }
+                            : { duration: 0.24, ease: FL_EASE_STANDARD }
+                        }
+                        className="absolute inset-0 -z-10 rounded-xl bg-[#0F2557] shadow-xs dark:bg-[#8BA8FF]"
                         aria-hidden="true"
                       />
                     )}
                     <span className="flex items-center gap-2.5">
                       <Icon
                         className="h-[18px] w-[18px] shrink-0"
-                        strokeWidth={active ? 2 : 1.55}
+                        strokeWidth={active ? 2 : 1.65}
                         aria-hidden="true"
                       />
                       <span>{item.label}</span>
@@ -139,7 +131,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     {item.to === '/focus' && activeSession && (
                       <span
                         data-lang-exempt="true"
-                        className="rounded-full bg-[#4B735C] px-2 py-0.5 text-[10px] font-semibold tracking-wide leading-[1.2] text-white dark:bg-[#7FB395] dark:text-[#0D1424]"
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide leading-[1.2] ${
+                          active
+                            ? 'bg-white/20 text-white dark:bg-[#0D1424]/15 dark:text-[#0D1424]'
+                            : 'bg-[#4B735C] text-white dark:bg-[#7FB395] dark:text-[#0D1424]'
+                        }`}
                       >
                         LIVE
                       </span>
@@ -151,49 +147,67 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           </div>
         </div>
 
-        {/* Repurposed Bottom Sidebar Slot -> Dedicated Achievements Access */}
-        <div className="border-t border-[var(--fl-border)]/75 p-3.5">
-          <Link
-            to="/profile?tab=achievements"
-            data-testid="desktop-nav-achievements"
-            aria-current={isAchievementsView ? 'page' : undefined}
-            className={`fl-btn group flex items-center gap-2.5 rounded-2xl border p-2.5 text-left transition-colors ${
-              isAchievementsView
-                ? 'border-[var(--fl-sage-border)] bg-[var(--fl-sage-soft)] text-[var(--fl-text)]'
-                : 'border-[var(--fl-border)]/80 bg-[var(--fl-bg)] hover:border-[var(--fl-primary)]/30 hover:bg-[var(--fl-soft-blue)]/65'
+        {/* Bottom Sidebar Slot (#5): Profile Navigation with Dynamic Avatar & Unified Active State */}
+        <div className="border-t border-[var(--fl-border)]/75 px-4 py-3.5">
+          <NavLink
+            to="/profile"
+            data-testid="desktop-nav-profile"
+            aria-current={isDesktopProfileActive ? 'page' : undefined}
+            className={`fl-btn fl-type-nav relative z-0 isolate flex min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2 transition-colors duration-200 ${
+              isDesktopProfileActive
+                ? 'font-semibold text-white dark:text-[#0D1424]'
+                : 'font-medium text-[var(--fl-muted)] hover:bg-[var(--fl-soft-blue)]/65 hover:text-[var(--fl-text)]'
             }`}
           >
-            <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                isAchievementsView
-                  ? 'bg-[var(--fl-surface)] text-[var(--fl-sage)] shadow-xs'
-                  : 'bg-[var(--fl-olive-soft)] text-[var(--fl-olive)]'
-              }`}
-            >
-              <Trophy className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden="true" />
+            {isDesktopProfileActive && (
+              <motion.span
+                layoutId="fl-desktop-nav-active"
+                transition={
+                  prefersReduced
+                    ? { duration: 0 }
+                    : { duration: 0.24, ease: FL_EASE_STANDARD }
+                }
+                className="absolute inset-0 -z-10 rounded-xl bg-[#0F2557] shadow-xs dark:bg-[#8BA8FF]"
+                aria-hidden="true"
+              />
+            )}
+            <span className="flex min-w-0 items-center gap-2.5">
+              {hasAvatarPhoto ? (
+                <img
+                  src={currentUser?.avatarUrl}
+                  alt={currentUser?.name || copy.nav.profile}
+                  referrerPolicy="no-referrer"
+                  data-testid="desktop-nav-profile-avatar-img"
+                  className={`h-5 w-5 shrink-0 rounded-full object-cover ring-1.5 ${
+                    isDesktopProfileActive
+                      ? 'ring-white/80 dark:ring-[#0D1424]/50'
+                      : 'ring-[var(--fl-border)]'
+                  }`}
+                />
+              ) : (
+                <span
+                  data-lang-exempt="true"
+                  data-testid="desktop-nav-profile-avatar-initials"
+                  aria-hidden="true"
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold leading-none tracking-tight ${
+                    isDesktopProfileActive
+                      ? 'bg-white/22 text-white ring-1 ring-white/45 dark:bg-[#0D1424]/15 dark:text-[#0D1424] dark:ring-[#0D1424]/30'
+                      : 'bg-[var(--fl-soft-blue)] text-[#0F2557] ring-1 ring-[#0F2557]/15 dark:text-[#8BA8FF] dark:ring-[#8BA8FF]/25'
+                  }`}
+                >
+                  {userInitials}
+                </span>
+              )}
+              <span className="truncate">{copy.nav.profile}</span>
             </span>
-            <div className="min-w-0 flex-1">
-              <p className="fl-type-support truncate font-semibold text-[var(--fl-text)]">
-                <span className="fl-lang">{achievementsLabel}</span>
-              </p>
-              <p className="fl-type-label truncate text-[var(--fl-muted)] tabular-nums">
-                {unlockedCount} / {achievements.length}{' '}
-                <span className="fl-lang">{language === 'id' ? 'terbuka' : 'unlocked'}</span>
-              </p>
-            </div>
-            <ChevronRight
-              className="h-4 w-4 shrink-0 text-[var(--fl-muted)] transition-transform group-hover:translate-x-0.5"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-          </Link>
+          </NavLink>
         </div>
       </aside>
 
       {/* Main Column */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Tablet & Mobile Compact Header (< lg, 56px) — NO duplicate Profile link */}
-        <header className="sticky top-0 z-30 shrink-0 border-b border-[var(--fl-border)]/75 bg-white/90 backdrop-blur-md transition-colors duration-200 lg:hidden dark:bg-[#0D162B]/90">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        {/* Tablet & Mobile Compact Header (< lg, 56px) — Stationary outside scroll container */}
+        <header className="z-30 shrink-0 border-b border-[var(--fl-border)]/75 bg-white/95 backdrop-blur-md transition-colors duration-200 lg:hidden dark:bg-[#0D162B]/95">
           <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between gap-2 px-4 sm:px-6">
             <BrandLogoLink variant="app" />
 
@@ -221,8 +235,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           </div>
         </header>
 
-        {/* Slim Desktop Workspace Utility Bar (lg and up) */}
-        <header className="sticky top-0 z-30 hidden h-14 shrink-0 items-center justify-between gap-4 border-b border-[var(--fl-border)]/70 bg-white/88 px-8 backdrop-blur-md lg:flex dark:bg-[#0B1222]/88">
+        {/* Slim Desktop Workspace Utility Bar (lg and up) — Stationary outside scroll container */}
+        <header className="z-30 hidden h-14 shrink-0 items-center justify-between gap-4 border-b border-[var(--fl-border)]/70 bg-white/92 px-8 backdrop-blur-md lg:flex dark:bg-[#0B1222]/92">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="fl-lang fl-type-nav truncate font-semibold text-[var(--fl-text)]">
               {currentPageTitle}
@@ -243,16 +257,21 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           </div>
         </header>
 
-        {/* Main Content */}
-        <main
-          className={
-            isFullAiPage
-              ? 'mx-auto flex min-h-0 w-full flex-1 flex-col overflow-hidden px-2 py-2 sm:px-4 sm:py-3 lg:w-[min(100%-48px,1160px)] lg:px-0 lg:py-5'
-              : 'mx-auto w-full max-w-[580px] px-4 py-6 sm:px-6 lg:max-w-6xl lg:px-8 lg:py-8'
-          }
-        >
-          {children}
-        </main>
+        {/* Main Content — Dedicated Scroll Container (separated from Header, Sidebar, and Bottom Nav) */}
+        {isFullAiPage ? (
+          <main className="mx-auto flex min-h-0 w-full flex-1 flex-col overflow-hidden px-2 pt-2 pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:px-4 sm:pt-3 lg:w-[min(100%-48px,1160px)] lg:px-0 lg:py-5">
+            {children}
+          </main>
+        ) : (
+          <main
+            data-app-scroll-container="true"
+            className="fl-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-clip overscroll-y-none"
+          >
+            <div className="mx-auto w-full max-w-[580px] px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-6 lg:max-w-6xl lg:px-8 lg:pt-8 lg:pb-14">
+              {children}
+            </div>
+          </main>
+        )}
       </div>
 
       {/* Magic Floating Bottom Navigation (Smartphone & Tablet < lg) — Nearly-opaque readable surface */}
@@ -286,7 +305,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
           {/* 5 Equal Navigation Slots */}
           <div className="relative z-10 grid h-full grid-cols-5 items-stretch">
-            {navItems.map((item) => {
+            {mobileNavItems.map((item) => {
               const Icon = item.icon;
               const active = location.pathname === item.to;
               return (

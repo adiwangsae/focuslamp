@@ -35,7 +35,7 @@ interface AiChatRequestBody {
   language?: 'en' | 'id';
   history?: ChatHistoryTurn[];
   contextSummary?: {
-    accountType?: 'registered' | 'demo';
+    accountType?: 'registered';
     studentFirstName?: string;
     totalSessions?: number;
     completedSessions?: number;
@@ -51,8 +51,6 @@ interface AiChatRequestBody {
     defaultFocusMinutes?: number;
     deviceConnected?: boolean;
     phoneDocked?: boolean;
-    ambientLightLux?: number;
-    mlDemoNote?: string;
   };
 }
 
@@ -65,22 +63,18 @@ function buildSystemInstruction(
       ? 'Respond exclusively in natural, warm, professional Indonesian (Bahasa Indonesia).'
       : 'Respond exclusively in clear, warm, professional English.';
 
-  const isDemoCtx = typeof ctx === 'object' && ctx?.accountType === 'demo';
   const statsBlock =
     typeof ctx === 'string'
       ? ctx
       : ctx
       ? [
-          `Account type: ${isDemoCtx ? 'demo' : 'registered'}`,
+          `Account type: ${ctx.accountType ?? 'registered'}`,
           `User first name: ${ctx.studentFirstName ?? 'User'}`,
           `Recorded sessions: ${ctx.totalSessions ?? 0} total (${ctx.completedSessions ?? 0} completed, completion rate ${ctx.completionRate ?? 0}%)`,
           `Total focus time: ${ctx.totalFocusMinutes ?? 0} minutes (average block ${ctx.averageSessionMinutes ?? 0} min, default block ${ctx.defaultFocusMinutes ?? 25} min)`,
           `Streak: ${ctx.currentStreak ?? 0} day(s) current, ${ctx.longestStreak ?? 0} day(s) longest, today ${ctx.todayFocusMinutes ?? 0} min logged, monthly recoveries remaining: ${ctx.recoveriesRemaining ?? 3}/3`,
           `Gamification: Level ${ctx.level ?? 1}, ${ctx.totalXp ?? 0} XP`,
-          isDemoCtx
-            ? `Device FL-01 (simulated demo): connected=${Boolean(ctx.deviceConnected)}, phoneDocked=${Boolean(ctx.phoneDocked)}, ambientLightLux=${ctx.ambientLightLux ?? 'unavailable'}`
-            : `Device FL-01: ${ctx.deviceConnected ? 'Connected' : 'No device connected (Software Study Timer mode)'}`,
-          ctx.mlDemoNote && isDemoCtx ? `ML analysis context: ${ctx.mlDemoNote}` : '',
+          `Device FL-01: ${ctx.deviceConnected ? 'Connected' : 'No device connected (Software Study Timer mode)'}`,
         ]
           .filter(Boolean)
           .join('\n')
@@ -94,9 +88,7 @@ function buildSystemInstruction(
     '- Base any user-specific remarks ONLY on the verified context summary below. Never invent statistics, sensor readings, model accuracies, or external citations.',
     '- Physical sensors (desk proximity & phone dock) measure physical presence and phone placement—never claim they directly measure mental or cognitive attention.',
     '- If totalSessions < 3, explicitly note that personalized behavioral patterns need at least 3 logged sessions before making strong habit inferences, while still answering general study questions helpfully.',
-    isDemoCtx
-      ? '- When referencing demo device or ML demonstration figures, mention they are demonstration data.'
-      : '- For registered accounts without a connected device, do not fabricate sensor readings, ambient light levels, dock telemetry, or ML classification results.',
+    '- When no physical device is connected, do not fabricate sensor readings, ambient light levels, dock telemetry, or ML classification results.',
     '',
     'Verified user & device context summary:',
     statsBlock,

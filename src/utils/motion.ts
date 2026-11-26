@@ -47,22 +47,22 @@ export const pageTransitionVariants: Variants = {
 export const authFormSlideVariants: Variants = {
   initial: (direction: number) => ({
     opacity: 0,
-    x: direction >= 0 ? 18 : -18,
+    y: direction >= 0 ? 6 : -6,
   }),
   animate: {
     opacity: 1,
-    x: 0,
+    y: 0,
     transition: {
-      duration: FL_DURATION.authSlide,
+      duration: 0.26,
       ease: FL_EASE_STANDARD,
     },
   },
   exit: (direction: number) => ({
     opacity: 0,
-    x: direction >= 0 ? -18 : 18,
+    y: direction >= 0 ? -6 : 6,
     transition: {
-      duration: 0.17,
-      ease: FL_EASE_IN,
+      duration: 0.22,
+      ease: FL_EASE_STANDARD,
     },
   }),
 };

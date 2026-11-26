@@ -58,8 +58,8 @@ export const EmailVerificationPage: React.FC = () => {
     showToast(
       'info',
       language === 'id'
-        ? 'Token verifikasi simulasi baru (24 jam) telah dikirim.'
-        : 'New simulated 24-hour verification token generated.'
+        ? 'Token verifikasi baru (24 jam) telah dibuat.'
+        : 'New 24-hour verification token issued.'
     );
   };
 

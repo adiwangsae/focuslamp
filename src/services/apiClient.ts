@@ -1,12 +1,11 @@
 /**
- * Future FastAPI integration boundary.
- * In this prototype, VITE_API_BASE_URL is optional; when absent or disabled,
- * service modules cleanly execute against the simulated client-side provider.
+ * FastAPI integration boundary.
+ * When VITE_API_BASE_URL is configured, requests target the external FastAPI backend.
  */
 
 export interface ApiClientConfig {
   baseUrl: string | null;
-  mode: 'simulated' | 'fastapi';
+  mode: 'local' | 'fastapi';
 }
 
 export function getApiConfig(): ApiClientConfig {
@@ -20,7 +19,7 @@ export function getApiConfig(): ApiClientConfig {
 
   return {
     baseUrl: configured,
-    mode: 'simulated',
+    mode: configured ? 'fastapi' : 'local',
   };
 }
 
@@ -29,10 +28,10 @@ export async function apiRequest<T>(
   options?: RequestInit
 ): Promise<{ ok: boolean; data?: T; error?: string }> {
   const { baseUrl, mode } = getApiConfig();
-  if (mode === 'simulated' || !baseUrl) {
+  if (mode === 'local' || !baseUrl) {
     return {
       ok: false,
-      error: `Simulated mode active; skipping remote request to ${path}.`,
+      error: `Remote FastAPI base URL not configured; skipping request to ${path}.`,
     };
   }
 

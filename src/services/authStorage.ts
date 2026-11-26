@@ -9,9 +9,7 @@ import {
   NotificationItem,
   UserProfile,
 } from '../types';
-import { DEMO_MODE_ENABLED } from '../config/demoConfig';
-import { createDemoAccountBundles, DEMO_ACCOUNT_CREDENTIALS } from '../data/mockUsers';
-import { authService, PasswordDigestRecord, SimulatedTokenRecord } from './authService';
+import { authService, AuthTokenRecord, PasswordDigestRecord } from './authService';
 import { sessionService } from './sessionService';
 
 export interface StorageLike {
@@ -49,12 +47,13 @@ export interface ActiveSessionPointer {
 export const STORAGE_KEYS = {
   REGISTERED_ACCOUNTS: 'focuslamp_registered_accounts_v1',
   REGISTERED_DATA_PREFIX: 'focuslamp_registered_data_v1::',
-  DEMO_STATE: 'focuslamp_demo_state_v1',
   SESSION_POINTER: 'focuslamp_auth_session_v1',
   AUTH_TOKENS: 'focuslamp_auth_tokens_v1',
   GUEST_LANGUAGE: 'focuslamp_guest_lang_v1',
   REMEMBERED_EMAIL: 'focuslamp_remembered_email',
 } as const;
+
+const LEGACY_DEMO_STATE_KEY = 'focuslamp_demo_state_v1';
 
 function getBrowserStorage(): StorageLike | null {
   try {
@@ -137,37 +136,14 @@ function createInitialRegisteredUserData(
   };
 }
 
-function createInitialDemoRecords(): Record<string, UserAppDataRecord> {
-  const bundles = createDemoAccountBundles();
-  const records: Record<string, UserAppDataRecord> = {};
-  for (const bundle of Object.values(bundles)) {
-    const userId = bundle.profile.id;
-    records[userId] = {
-      userId,
-      accountType: 'demo',
-      profile: {
-        ...bundle.profile,
-        accountType: 'demo',
-        isDemo: true,
-      },
-      device: bundle.device,
-      sessions: bundle.sessions,
-      notifications: bundle.notifications,
-      conversations: bundle.initialConversations,
-      activeConversationId: bundle.initialConversations[0]?.id ?? '',
-      factsExploredIds:
-        userId === 'demo-nadia' ? ['fact_ward_2017', 'fact_mark_2008'] : [],
-    };
-  }
-  return records;
-}
-
 function registeredDataKey(userId: string): string {
   return `${STORAGE_KEYS.REGISTERED_DATA_PREFIX}${userId}`;
 }
 
 export const authStorage = {
-  getRegisteredAccountsMap(storage: StorageLike | null = getBrowserStorage()): Record<string, StoredRegisteredAuthRecord> {
+  getRegisteredAccountsMap(
+    storage: StorageLike | null = getBrowserStorage()
+  ): Record<string, StoredRegisteredAuthRecord> {
     if (!storage) return {};
     const parsed = safeParseJson<Record<string, StoredRegisteredAuthRecord>>(
       storage.getItem(STORAGE_KEYS.REGISTERED_ACCOUNTS)
@@ -202,60 +178,10 @@ export const authStorage = {
     return null;
   },
 
-  getAllKnownEmails(
-    demoEnabled = DEMO_MODE_ENABLED,
-    storage: StorageLike | null = getBrowserStorage()
-  ): string[] {
-    const regEmails = Object.values(this.getRegisteredAccountsMap(storage)).map((r) =>
+  getAllKnownEmails(storage: StorageLike | null = getBrowserStorage()): string[] {
+    return Object.values(this.getRegisteredAccountsMap(storage)).map((r) =>
       r.email.toLowerCase()
     );
-    if (!demoEnabled) return regEmails;
-    const demoEmails = DEMO_ACCOUNT_CREDENTIALS.map((d) => d.email.toLowerCase());
-    return Array.from(new Set([...regEmails, ...demoEmails]));
-  },
-
-  getDemoRecordsMap(
-    demoEnabled = DEMO_MODE_ENABLED,
-    storage: StorageLike | null = getBrowserStorage()
-  ): Record<string, UserAppDataRecord> {
-    if (!demoEnabled) return {};
-    const defaults = createInitialDemoRecords();
-    if (!storage) return defaults;
-    const parsed = safeParseJson<Record<string, UserAppDataRecord>>(
-      storage.getItem(STORAGE_KEYS.DEMO_STATE)
-    );
-    if (!parsed || typeof parsed !== 'object') {
-      return defaults;
-    }
-    const merged: Record<string, UserAppDataRecord> = { ...defaults };
-    for (const [id, rec] of Object.entries(parsed)) {
-      if (defaults[id] && rec && rec.profile) {
-        merged[id] = {
-          ...rec,
-          userId: id,
-          accountType: 'demo',
-          profile: {
-            ...rec.profile,
-            id,
-            accountType: 'demo',
-            isDemo: true,
-          },
-        };
-      }
-    }
-    return merged;
-  },
-
-  saveDemoRecordsMap(
-    map: Record<string, UserAppDataRecord>,
-    storage: StorageLike | null = getBrowserStorage()
-  ): void {
-    if (!storage) return;
-    try {
-      storage.setItem(STORAGE_KEYS.DEMO_STATE, JSON.stringify(map));
-    } catch {
-      // Ignore quota issues
-    }
   },
 
   getRegisteredUserData(
@@ -273,7 +199,6 @@ export const authStorage = {
         ...parsed.profile,
         id: userId,
         accountType: 'registered',
-        isDemo: false,
       },
       factsExploredIds: Array.isArray(parsed.factsExploredIds) ? parsed.factsExploredIds : [],
     };
@@ -281,26 +206,14 @@ export const authStorage = {
 
   saveUserAppData(
     record: UserAppDataRecord,
-    demoEnabled = DEMO_MODE_ENABLED,
     storage: StorageLike | null = getBrowserStorage()
   ): void {
     if (!storage) return;
-    if (record.accountType === 'demo') {
-      if (!demoEnabled) return;
-      const demoMap = this.getDemoRecordsMap(demoEnabled, storage);
-      demoMap[record.userId] = {
-        ...record,
-        accountType: 'demo',
-        profile: { ...record.profile, accountType: 'demo', isDemo: true },
-      };
-      this.saveDemoRecordsMap(demoMap, storage);
-      return;
-    }
     try {
       const normalized: UserAppDataRecord = {
         ...record,
         accountType: 'registered',
-        profile: { ...record.profile, accountType: 'registered', isDemo: false },
+        profile: { ...record.profile, accountType: 'registered' },
       };
       storage.setItem(registeredDataKey(record.userId), JSON.stringify(normalized));
     } catch {
@@ -313,14 +226,12 @@ export const authStorage = {
     email: string;
     password: string;
     language?: Language;
-    demoEnabled?: boolean;
     storage?: StorageLike | null;
   }): Promise<
     | { ok: true; authRecord: StoredRegisteredAuthRecord; userData: UserAppDataRecord }
     | { ok: false; code: 'DUPLICATE_EMAIL' | 'INVALID_INPUT' }
   > {
     const storage = input.storage !== undefined ? input.storage : getBrowserStorage();
-    const demoEnabled = input.demoEnabled ?? DEMO_MODE_ENABLED;
     const normalizedEmail = input.email.trim().toLowerCase();
     const trimmedName = input.name.trim();
 
@@ -328,7 +239,7 @@ export const authStorage = {
       return { ok: false, code: 'INVALID_INPUT' };
     }
 
-    const existingEmails = this.getAllKnownEmails(demoEnabled, storage);
+    const existingEmails = this.getAllKnownEmails(storage);
     if (existingEmails.includes(normalizedEmail)) {
       return { ok: false, code: 'DUPLICATE_EMAIL' };
     }
@@ -356,7 +267,7 @@ export const authStorage = {
     const map = this.getRegisteredAccountsMap(storage);
     map[profile.id] = authRecord;
     this.saveRegisteredAccountsMap(map, storage);
-    this.saveUserAppData(userData, demoEnabled, storage);
+    this.saveUserAppData(userData, storage);
 
     return { ok: true, authRecord, userData };
   },
@@ -364,84 +275,42 @@ export const authStorage = {
   async authenticateWithCredentials(input: {
     email: string;
     password: string;
-    demoEnabled?: boolean;
     storage?: StorageLike | null;
   }): Promise<
     | { ok: true; userData: UserAppDataRecord }
     | { ok: false; code: 'INVALID_CREDENTIALS' }
   > {
     const storage = input.storage !== undefined ? input.storage : getBrowserStorage();
-    const demoEnabled = input.demoEnabled ?? DEMO_MODE_ENABLED;
     const normalizedEmail = input.email.trim().toLowerCase();
 
     const regAccount = this.findRegisteredAccountByEmail(normalizedEmail, storage);
-    if (regAccount) {
-      const passwordMatches = await authService.verifyPasswordPbkdf2(input.password, regAccount);
-      if (!passwordMatches) {
-        return { ok: false, code: 'INVALID_CREDENTIALS' };
-      }
-
-      let userData = this.getRegisteredUserData(regAccount.userId, storage);
-      if (!userData) {
-        const fallbackProfile = sessionService.createNewUserProfile(
-          regAccount.fullName,
-          regAccount.email,
-          'en',
-          regAccount.userId
-        );
-        fallbackProfile.createdAtIso = regAccount.createdAtIso;
-        userData = createInitialRegisteredUserData(fallbackProfile, 'en');
-        this.saveUserAppData(userData, demoEnabled, storage);
-      }
-
-      this.setSessionPointer(
-        { userId: regAccount.userId, accountType: 'registered', activeSession: null },
-        storage
-      );
-      return { ok: true, userData };
+    if (!regAccount) {
+      return { ok: false, code: 'INVALID_CREDENTIALS' };
     }
 
-    if (demoEnabled) {
-      const demoCred = DEMO_ACCOUNT_CREDENTIALS.find(
-        (d) => d.email.toLowerCase() === normalizedEmail
-      );
-      if (demoCred && input.password === demoCred.demoPassword) {
-        const demoMap = this.getDemoRecordsMap(demoEnabled, storage);
-        const demoData = demoMap[demoCred.id];
-        if (demoData) {
-          this.setSessionPointer(
-            { userId: demoCred.id, accountType: 'demo', activeSession: null },
-            storage
-          );
-          return { ok: true, userData: demoData };
-        }
-      }
+    const passwordMatches = await authService.verifyPasswordPbkdf2(input.password, regAccount);
+    if (!passwordMatches) {
+      return { ok: false, code: 'INVALID_CREDENTIALS' };
     }
 
-    return { ok: false, code: 'INVALID_CREDENTIALS' };
-  },
+    let userData = this.getRegisteredUserData(regAccount.userId, storage);
+    if (!userData) {
+      const fallbackProfile = sessionService.createNewUserProfile(
+        regAccount.fullName,
+        regAccount.email,
+        'en',
+        regAccount.userId
+      );
+      fallbackProfile.createdAtIso = regAccount.createdAtIso;
+      userData = createInitialRegisteredUserData(fallbackProfile, 'en');
+      this.saveUserAppData(userData, storage);
+    }
 
-  authenticateDemoQuick(input: {
-    email: string;
-    demoEnabled?: boolean;
-    storage?: StorageLike | null;
-  }): UserAppDataRecord | null {
-    const demoEnabled = input.demoEnabled ?? DEMO_MODE_ENABLED;
-    if (!demoEnabled) return null;
-    const storage = input.storage !== undefined ? input.storage : getBrowserStorage();
-    const normalizedEmail = input.email.trim().toLowerCase();
-    const demoCred = DEMO_ACCOUNT_CREDENTIALS.find(
-      (d) => d.email.toLowerCase() === normalizedEmail
-    );
-    if (!demoCred) return null;
-    const demoMap = this.getDemoRecordsMap(demoEnabled, storage);
-    const demoData = demoMap[demoCred.id];
-    if (!demoData) return null;
     this.setSessionPointer(
-      { userId: demoCred.id, accountType: 'demo', activeSession: null },
+      { userId: regAccount.userId, accountType: 'registered', activeSession: null },
       storage
     );
-    return demoData;
+    return { ok: true, userData };
   },
 
   async updateRegisteredPasswordByEmail(
@@ -484,7 +353,7 @@ export const authStorage = {
     const parsed = safeParseJson<ActiveSessionPointer>(
       storage.getItem(STORAGE_KEYS.SESSION_POINTER)
     );
-    if (!parsed || !parsed.userId || (parsed.accountType !== 'registered' && parsed.accountType !== 'demo')) {
+    if (!parsed || !parsed.userId || parsed.accountType !== 'registered') {
       return null;
     }
     return parsed;
@@ -507,24 +376,23 @@ export const authStorage = {
   },
 
   loadActiveUserSession(
-    demoEnabled = DEMO_MODE_ENABLED,
     storage: StorageLike | null = getBrowserStorage()
   ): { userData: UserAppDataRecord; activeSession: ActiveSessionRuntime | null } | null {
-    const pointer = this.getSessionPointer(storage);
-    if (!pointer) return null;
+    if (storage) {
+      try {
+        storage.removeItem(LEGACY_DEMO_STATE_KEY);
+      } catch {
+        // Ignore restricted storage contexts
+      }
+    }
 
-    if (pointer.accountType === 'demo') {
-      if (!demoEnabled) {
+    const pointer = this.getSessionPointer(storage);
+    if (!pointer) {
+      // Clear any stale legacy non-registered session pointer
+      if (storage && storage.getItem(STORAGE_KEYS.SESSION_POINTER)) {
         this.setSessionPointer(null, storage);
-        return null;
       }
-      const demoMap = this.getDemoRecordsMap(demoEnabled, storage);
-      const demoData = demoMap[pointer.userId];
-      if (!demoData) {
-        this.setSessionPointer(null, storage);
-        return null;
-      }
-      return { userData: demoData, activeSession: pointer.activeSession ?? null };
+      return null;
     }
 
     const regMap = this.getRegisteredAccountsMap(storage);
@@ -540,37 +408,16 @@ export const authStorage = {
     return { userData: regData, activeSession: pointer.activeSession ?? null };
   },
 
-  resetDemoUserDataset(
-    demoUserId: string,
-    demoEnabled = DEMO_MODE_ENABLED,
-    storage: StorageLike | null = getBrowserStorage()
-  ): UserAppDataRecord | null {
-    if (!demoEnabled) return null;
-    const defaults = createInitialDemoRecords();
-    const freshRecord = defaults[demoUserId];
-    if (!freshRecord) return null;
-
-    const currentDemoMap = this.getDemoRecordsMap(demoEnabled, storage);
-    currentDemoMap[demoUserId] = freshRecord;
-    this.saveDemoRecordsMap(currentDemoMap, storage);
-
-    const pointer = this.getSessionPointer(storage);
-    if (pointer && pointer.accountType === 'demo' && pointer.userId === demoUserId) {
-      this.setSessionPointer({ ...pointer, activeSession: null }, storage);
-    }
-    return freshRecord;
-  },
-
-  loadAuthTokens(storage: StorageLike | null = getBrowserStorage()): Record<string, SimulatedTokenRecord> {
+  loadAuthTokens(storage: StorageLike | null = getBrowserStorage()): Record<string, AuthTokenRecord> {
     if (!storage) return {};
-    const parsed = safeParseJson<Record<string, SimulatedTokenRecord>>(
+    const parsed = safeParseJson<Record<string, AuthTokenRecord>>(
       storage.getItem(STORAGE_KEYS.AUTH_TOKENS)
     );
     return parsed && typeof parsed === 'object' ? parsed : {};
   },
 
   saveAuthTokens(
-    tokens: Record<string, SimulatedTokenRecord>,
+    tokens: Record<string, AuthTokenRecord>,
     storage: StorageLike | null = getBrowserStorage()
   ): void {
     if (!storage) return;

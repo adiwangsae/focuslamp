@@ -29,10 +29,10 @@ describe('authDraft helpers', () => {
     saveAuthDraft({ email: 'student@campus.ac.id' }, store);
     assert.deepEqual(getAuthDraft(store), { email: 'student@campus.ac.id', name: '' });
 
-    saveAuthDraft({ name: 'Nadia Pratama' }, store);
+    saveAuthDraft({ name: 'Alex Pratama' }, store);
     assert.deepEqual(getAuthDraft(store), {
       email: 'student@campus.ac.id',
-      name: 'Nadia Pratama',
+      name: 'Alex Pratama',
     });
 
     clearAuthDraft(store);

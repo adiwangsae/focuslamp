@@ -55,7 +55,6 @@ export interface CopyDictionary {
     updatePasswordButton: string;
     verifyNowButton: string;
     resendVerificationButton: string;
-    demoQuickTitle: string;
     termsLabel: string;
     privacyLabel: string;
     marketingLabel: string;
@@ -94,7 +93,7 @@ export interface CopyDictionary {
     setupSubtitle: string;
     durationLabel: string;
     customDurationLabel: string;
-    prototypeLimitNote: string;
+    durationRangeNote: string;
     subjectLabel: string;
     subjectPlaceholder: string;
     deviceReadiness: string;
@@ -102,8 +101,6 @@ export interface CopyDictionary {
     startFocus: string;
     activeSessionTitle: string;
     endSession: string;
-    demoControlsTitle: string;
-    demoControlsHint: string;
     resultTitle: string;
     actualFocusLabel: string;
     awayTimeLabel: string;
@@ -118,14 +115,12 @@ export interface CopyDictionary {
   device: {
     title: string;
     subtitle: string;
-    simBanner: string;
     connectionLabel: string;
     lampLabel: string;
     dockLabel: string;
     presenceLabel: string;
     networkLabel: string;
     ambientLabel: string;
-    simControlsTitle: string;
     techDetailsTitle: string;
   };
   dashboard: {
@@ -139,14 +134,12 @@ export interface CopyDictionary {
     monthlyProgressTitle: string;
     monthlyProgressSubtitle: string;
     mlSectionTitle: string;
-    mlDisclaimer: string;
     historyTitle: string;
     noSessionsFound: string;
   };
   ai: {
     title: string;
     subtitle: string;
-    simDisclaimer: string;
     tabInsights: string;
     tabTips: string;
     tabMotivation: string;
@@ -181,11 +174,8 @@ export interface CopyDictionary {
     dailyTargetLabel: string;
     retentionLabel: string;
     notificationsSection: string;
-    securityTitle: string;
-    securityBody: string;
     logout: string;
     achievementsTitle: string;
-    resetDemoData: string;
   };
   common: {
     connected: string;
@@ -200,7 +190,6 @@ export interface CopyDictionary {
     away: string;
     on: string;
     off: string;
-    demoDataBadge: string;
     level: string;
     streakDays: string;
     markAllRead: string;
@@ -242,24 +231,23 @@ export const COPY: Record<Language, CopyDictionary> = {
       aboutHeading: 'Built for students managing real digital noise',
       aboutBody:
         'Instead of noisy productivity timers or intrusive monitoring, FocusLamp uses a physical phone dock and ambient task lighting to mark when study begins—giving you honest metrics on time at the desk while respecting that sensors never read your mind.',
-      footerTagline: 'Smart Study Lamp Ecosystem · Interactive Prototype',
-      footerCopyright: '© 2026 FocusLamp Prototype. Demonstration build without active hardware.',
+      footerTagline: 'Smart Study Lamp Ecosystem',
+      footerCopyright: '© 2026 FocusLamp. Intentional study environment & habit tracking.',
     },
     auth: {
       authLandingTitle: 'Welcome to FocusLamp',
-      authLandingSubtitle:
-        'Sign in with an existing student account, try a populated demo profile, or create a new account.',
+      authLandingSubtitle: 'Sign in with your FocusLamp account or create a new account.',
       loginTitle: 'Welcome back to FocusLamp',
-      loginSubtitle: 'Sign in with a demo student profile or your created session account.',
+      loginSubtitle: 'Sign in using your registered email address and password.',
       registerTitle: 'Create your FocusLamp account',
       registerSubtitle:
         'Create your personal FocusLamp account to track focus sessions and study habits.',
       forgotTitle: 'Reset your password',
-      forgotSubtitle: 'Enter your email to generate a simulated 30-minute recovery token.',
+      forgotSubtitle: 'Enter your email address to issue a 30-minute recovery token.',
       resetTitle: 'Choose a new password',
-      resetSubtitle: 'Use your simulated recovery token before it expires.',
+      resetSubtitle: 'Enter your recovery token before it expires.',
       verifyTitle: 'Verify your email address',
-      verifySubtitle: 'Confirm ownership of your account email within the simulated 24-hour window.',
+      verifySubtitle: 'Confirm ownership of your account email within the 24-hour window.',
       emailLabel: 'Email Address',
       passwordLabel: 'Password',
       confirmPasswordLabel: 'Confirm Password',
@@ -273,16 +261,15 @@ export const COPY: Record<Language, CopyDictionary> = {
       updatePasswordButton: 'Update Password',
       verifyNowButton: 'Confirm Verification',
       resendVerificationButton: 'Resend Verification Email',
-      demoQuickTitle: 'Try a pre-populated demo student profile',
       termsLabel: 'I accept the FocusLamp Terms and Conditions (required)',
       privacyLabel: 'I acknowledge the FocusLamp Privacy Policy (required)',
       marketingLabel: 'Receive occasional study research updates (optional)',
       noAccount: 'New to FocusLamp?',
       haveAccount: 'Already have an account?',
       backToLogin: 'Back to Log In',
-      resetSentTitle: 'Recovery simulation ready',
+      resetSentTitle: 'Recovery token ready',
       resetSentBody:
-        'A simulated single-use token valid for 30 minutes has been issued for this account.',
+        'A single-use recovery token valid for 30 minutes has been issued for this account.',
     },
     onboarding: {
       title: 'Welcome to FocusLamp',
@@ -310,11 +297,10 @@ export const COPY: Record<Language, CopyDictionary> = {
     },
     focus: {
       setupTitle: 'Focus Setup',
-      setupSubtitle: 'Prepare your desk, dock your phone, and choose a study block.',
+      setupSubtitle: 'Prepare your study block and choose a duration to get started.',
       durationLabel: 'Session Duration',
       customDurationLabel: 'Custom minutes',
-      prototypeLimitNote:
-        'Prototype range: 1–60 minutes (aligned with current FL-01 firmware prototype bounds).',
+      durationRangeNote: 'Range: 1–60 minutes per focus block.',
       subjectLabel: 'Study Topic (Optional)',
       subjectPlaceholder: 'e.g. Algorithms, Calculus, Essay Draft',
       deviceReadiness: 'Device Readiness',
@@ -323,9 +309,6 @@ export const COPY: Record<Language, CopyDictionary> = {
       startFocus: 'Start Focus',
       activeSessionTitle: 'Focus Session in Progress',
       endSession: 'End Session',
-      demoControlsTitle: 'Demo Controls (Hardware Event Simulator)',
-      demoControlsHint:
-        'Simulate physical sensor and Bluetooth events for demonstration. Not shown as normal user controls.',
       resultTitle: 'Session Summary',
       actualFocusLabel: 'Actual Focus Time',
       awayTimeLabel: 'Excluded Away Time',
@@ -339,16 +322,13 @@ export const COPY: Record<Language, CopyDictionary> = {
     },
     device: {
       title: 'FocusLamp FL-01 Device',
-      subtitle: 'Simulated hardware telemetry, dock state, and lighting controls.',
-      simBanner:
-        'Simulated Hardware Interface: No live Bluetooth LE or Android DND bridge is active in this browser.',
+      subtitle: 'Pair and manage your physical FocusLamp FL-01 companion hardware.',
       connectionLabel: 'BLE Connection',
       lampLabel: 'Task Lamp',
       dockLabel: 'Phone Dock',
       presenceLabel: 'Desk Presence Sensor',
       networkLabel: 'Wi-Fi Telemetry Sync',
       ambientLabel: 'Ambient Light',
-      simControlsTitle: 'Device Simulation Controls',
       techDetailsTitle: 'Technical Specifications & Firmware Diagnostics',
     },
     dashboard: {
@@ -362,17 +342,13 @@ export const COPY: Record<Language, CopyDictionary> = {
         'Note: Physical presence and dock sensors measure desk presence and phone placement—they never claim to directly measure cognitive attention.',
       monthlyProgressTitle: 'Monthly Progress (Rolling 4 Weeks)',
       monthlyProgressSubtitle: 'Focus minutes and completed sessions across the last 28 days.',
-      mlSectionTitle: 'ML Results (Demonstration Data)',
-      mlDisclaimer:
-        'Demonstration ML summary derived from session history. No live model accuracy or confidence score is fabricated.',
+      mlSectionTitle: 'ML Pattern Insights',
       historyTitle: 'Session History',
       noSessionsFound: 'No sessions match the selected filters.',
     },
     ai: {
       title: 'FocusMate AI',
       subtitle: 'Interactive study coach, behavioral pattern analysis, and verified focus science.',
-      simDisclaimer:
-        'Prototype AI Transparency: Live chat uses the configured AI model when available; behavioral insights are deterministically computed from your logged session records.',
       tabInsights: 'Personalized Insights',
       tabTips: 'Study Tips',
       tabMotivation: 'Motivation',
@@ -397,7 +373,7 @@ export const COPY: Record<Language, CopyDictionary> = {
     },
     profile: {
       title: 'Profile & Settings',
-      subtitle: 'Manage preferences, notification retention, 26 achievements, and demo security.',
+      subtitle: 'Manage your account details, study preferences, notifications, and 26 achievements.',
       accountSection: 'Account Information',
       preferencesSection: 'Study & Display Preferences',
       languageLabel: 'Language',
@@ -408,12 +384,8 @@ export const COPY: Record<Language, CopyDictionary> = {
       dailyTargetLabel: 'Daily Focus Target',
       retentionLabel: 'Notification Retention',
       notificationsSection: 'Notification & Sensor Preferences',
-      securityTitle: 'Prototype Security & Privacy Notice',
-      securityBody:
-        'This interactive demo uses client-side simulated authentication and mock user data. Production deployment requires FastAPI backend authentication, server-side authorization, HTTPS, rate limiting, and strict per-user database isolation.',
       logout: 'Log Out',
       achievementsTitle: 'Achievements (26 Milestones)',
-      resetDemoData: 'Reset Demo Data',
     },
     common: {
       connected: 'Connected',
@@ -428,7 +400,6 @@ export const COPY: Record<Language, CopyDictionary> = {
       away: 'Away from Desk',
       on: 'On',
       off: 'Off',
-      demoDataBadge: 'Demonstration Data',
       level: 'Level',
       streakDays: 'day streak',
       markAllRead: 'Mark all as read',
@@ -468,24 +439,23 @@ export const COPY: Record<Language, CopyDictionary> = {
       aboutHeading: 'Dibangun untuk mahasiswa menghadapi distraksi digital nyata',
       aboutBody:
         'Alih-alih pengatur waktu yang bising atau pemantauan yang mengganggu, FocusLamp menggunakan dock ponsel fisik dan pencahayaan meja untuk menandai waktu belajar—menyajikan metrik jujur tanpa mengklaim sensor dapat membaca pikiran.',
-      footerTagline: 'Ekosistem Lampu Belajar Pintar · Prototipe Interaktif',
-      footerCopyright: '© 2026 Prototipe FocusLamp. Simulasi demonstrasi tanpa perangkat keras aktif.',
+      footerTagline: 'Ekosistem Lampu Belajar Pintar',
+      footerCopyright: '© 2026 FocusLamp. Ekosistem belajar penuh kesadaran & pelacakan kebiasaan.',
     },
     auth: {
       authLandingTitle: 'Selamat Datang di FocusLamp',
-      authLandingSubtitle:
-        'Masuk dengan akun mahasiswa, coba profil demo siap pakai, atau buat akun baru.',
+      authLandingSubtitle: 'Masuk dengan akun FocusLamp Anda atau buat akun baru.',
       loginTitle: 'Selamat datang kembali di FocusLamp',
-      loginSubtitle: 'Masuk dengan profil mahasiswa demo atau akun yang Anda buat.',
+      loginSubtitle: 'Masuk menggunakan email dan kata sandi akun Anda.',
       registerTitle: 'Buat akun FocusLamp Anda',
       registerSubtitle:
         'Buat akun FocusLamp pribadi Anda untuk mencatat sesi fokus dan kebiasaan belajar.',
       forgotTitle: 'Atur ulang kata sandi',
-      forgotSubtitle: 'Masukkan email Anda untuk membuat token pemulihan simulasi 30 menit.',
+      forgotSubtitle: 'Masukkan email Anda untuk membuat token pemulihan 30 menit.',
       resetTitle: 'Buat kata sandi baru',
-      resetSubtitle: 'Gunakan token pemulihan simulasi sebelum masa berlakunya habis.',
+      resetSubtitle: 'Masukkan token pemulihan sebelum masa berlakunya habis.',
       verifyTitle: 'Verifikasi alamat email Anda',
-      verifySubtitle: 'Konfirmasi kepemilikan email akun Anda dalam batas simulasi 24 jam.',
+      verifySubtitle: 'Konfirmasi kepemilikan email akun Anda dalam batas 24 jam.',
       emailLabel: 'Alamat Email',
       passwordLabel: 'Kata Sandi',
       confirmPasswordLabel: 'Konfirmasi Kata Sandi',
@@ -499,16 +469,15 @@ export const COPY: Record<Language, CopyDictionary> = {
       updatePasswordButton: 'Perbarui Kata Sandi',
       verifyNowButton: 'Konfirmasi Verifikasi',
       resendVerificationButton: 'Kirim Ulang Email Verifikasi',
-      demoQuickTitle: 'Coba profil mahasiswa demo siap pakai',
       termsLabel: 'Saya menyetujui Ketentuan Layanan FocusLamp (wajib)',
       privacyLabel: 'Saya memahami Kebijakan Privasi FocusLamp (wajib)',
       marketingLabel: 'Terima pembaruan riset belajar sesekali (opsional)',
       noAccount: 'Baru di FocusLamp?',
       haveAccount: 'Sudah memiliki akun?',
       backToLogin: 'Kembali ke Masuk',
-      resetSentTitle: 'Simulasi pemulihan siap',
+      resetSentTitle: 'Token pemulihan siap',
       resetSentBody:
-        'Token sekali pakai simulasi yang berlaku selama 30 menit telah dibuat untuk akun ini.',
+        'Token sekali pakai yang berlaku selama 30 menit telah dibuat untuk akun ini.',
     },
     onboarding: {
       title: 'Selamat Datang di FocusLamp',
@@ -536,11 +505,10 @@ export const COPY: Record<Language, CopyDictionary> = {
     },
     focus: {
       setupTitle: 'Pengaturan Fokus',
-      setupSubtitle: 'Siapkan meja Anda, letakkan ponsel di dock, dan pilih durasi belajar.',
+      setupSubtitle: 'Siapkan blok belajar Anda dan pilih durasi untuk memulai.',
       durationLabel: 'Durasi Sesi',
       customDurationLabel: 'Menit kustom',
-      prototypeLimitNote:
-        'Rentang prototipe: 1–60 menit (sesuai batasan prototipe firmware FL-01 saat ini).',
+      durationRangeNote: 'Rentang: 1–60 menit per blok fokus.',
       subjectLabel: 'Topik Belajar (Opsional)',
       subjectPlaceholder: 'mis. Algoritma, Kalkulus, Draf Esai',
       deviceReadiness: 'Kesiapan Perangkat',
@@ -549,9 +517,6 @@ export const COPY: Record<Language, CopyDictionary> = {
       startFocus: 'Mulai Fokus',
       activeSessionTitle: 'Sesi Fokus Sedang Berlangsung',
       endSession: 'Akhiri Sesi',
-      demoControlsTitle: 'Kontrol Demo (Simulator Kejadian Perangkat)',
-      demoControlsHint:
-        'Simulasikan sensor fisik dan kejadian Bluetooth untuk demonstrasi. Tidak tampil sebagai kontrol pengguna biasa.',
       resultTitle: 'Ringkasan Sesi',
       actualFocusLabel: 'Waktu Fokus Aktual',
       awayTimeLabel: 'Waktu Meninggalkan Meja (Dikecualikan)',
@@ -565,16 +530,13 @@ export const COPY: Record<Language, CopyDictionary> = {
     },
     device: {
       title: 'Perangkat FocusLamp FL-01',
-      subtitle: 'Telemetri perangkat simulasi, status dock, dan kontrol pencahayaan.',
-      simBanner:
-        'Antarmuka Perangkat Simulasi: Tidak ada koneksi BLE langsung atau Android DND aktif di browser ini.',
+      subtitle: 'Pasangkan dan kelola perangkat keras FocusLamp FL-01 Anda.',
       connectionLabel: 'Koneksi BLE',
       lampLabel: 'Lampu Belajar',
       dockLabel: 'Dock Ponsel',
       presenceLabel: 'Sensor Kehadiran Meja',
       networkLabel: 'Sinkronisasi Wi-Fi',
       ambientLabel: 'Cahaya Sekitar',
-      simControlsTitle: 'Kontrol Simulasi Perangkat',
       techDetailsTitle: 'Spesifikasi Teknis & Diagnostik Firmware',
     },
     dashboard: {
@@ -588,17 +550,13 @@ export const COPY: Record<Language, CopyDictionary> = {
         'Catatan: Sensor kehadiran fisik dan dock hanya mencatat keberadaan di meja dan posisi ponsel—bukan pengukuran perhatian kognitif secara langsung.',
       monthlyProgressTitle: 'Progres Bulanan (4 Minggu Terakhir)',
       monthlyProgressSubtitle: 'Menit fokus dan sesi selesai selama 28 hari terakhir.',
-      mlSectionTitle: 'Hasil ML (Data Demonstrasi)',
-      mlDisclaimer:
-        'Ringkasan ML demonstrasi dari riwayat sesi. Tidak ada akurasi model atau skor kepercayaan yang direkayasa.',
+      mlSectionTitle: 'Wawasan Pola ML',
       historyTitle: 'Riwayat Sesi',
       noSessionsFound: 'Tidak ada sesi yang sesuai dengan filter.',
     },
     ai: {
       title: 'FocusMate AI',
       subtitle: 'Asisten belajar interaktif, analisis pola perilaku, dan sains fokus terverifikasi.',
-      simDisclaimer:
-        'Transparansi AI Prototipe: Obrolan langsung memakai model AI terkonfigurasi bila tersedia; wawasan perilaku dihitung deterministik dari riwayat sesi.',
       tabInsights: 'Wawasan Personal',
       tabTips: 'Tips Belajar',
       tabMotivation: 'Motivasi',
@@ -623,7 +581,7 @@ export const COPY: Record<Language, CopyDictionary> = {
     },
     profile: {
       title: 'Profil & Pengaturan',
-      subtitle: 'Kelola preferensi, retensi notifikasi, 26 pencapaian, dan info keamanan.',
+      subtitle: 'Kelola informasi akun, preferensi belajar, notifikasi, dan 26 pencapaian.',
       accountSection: 'Informasi Akun',
       preferencesSection: 'Preferensi Belajar & Tampilan',
       languageLabel: 'Bahasa',
@@ -634,12 +592,8 @@ export const COPY: Record<Language, CopyDictionary> = {
       dailyTargetLabel: 'Target Fokus Harian',
       retentionLabel: 'Retensi Notifikasi',
       notificationsSection: 'Preferensi Notifikasi & Sensor',
-      securityTitle: 'Pemberitahuan Keamanan & Privasi Prototipe',
-      securityBody:
-        'Demo interaktif ini menggunakan autentikasi simulasi sisi klien dan data contoh. Implementasi produksi memerlukan autentikasi backend FastAPI, otorisasi sisi server, HTTPS, pembatasan laju, dan isolasi data pengguna.',
       logout: 'Keluar',
       achievementsTitle: 'Pencapaian (26 Tonggak)',
-      resetDemoData: 'Atur Ulang Data Demo',
     },
     common: {
       connected: 'Terhubung',
@@ -654,7 +608,6 @@ export const COPY: Record<Language, CopyDictionary> = {
       away: 'Meninggalkan Meja',
       on: 'Menyala',
       off: 'Mati',
-      demoDataBadge: 'Data Demonstrasi',
       level: 'Level',
       streakDays: 'hari beruntun',
       markAllRead: 'Tandai semua dibaca',

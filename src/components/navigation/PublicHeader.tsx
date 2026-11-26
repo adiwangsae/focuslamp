@@ -10,6 +10,7 @@ interface PublicHeaderProps {
   showAuthControls?: boolean;
   hideTranslateOnMobile?: boolean;
   compact?: boolean;
+  primaryAction?: 'register' | 'login';
 }
 
 export const PublicHeader: React.FC<PublicHeaderProps> = ({
@@ -17,6 +18,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
   showAuthControls = true,
   hideTranslateOnMobile = false,
   compact = false,
+  primaryAction = 'register',
 }) => {
   const { copy, selectedLanguage, updatePreferences } = useApp();
 
@@ -109,10 +111,13 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
 
             {showAuthControls && (
               <Link
-                to="/register"
+                to={primaryAction === 'login' ? '/login' : '/register'}
+                data-testid={primaryAction === 'login' ? 'navbar-login-cta' : 'navbar-register-cta'}
                 className="fl-btn-primary !min-h-[40px] sm:!min-h-[44px] !px-4 sm:!px-5 shrink-0"
               >
-                <span className="fl-lang">{copy.nav.getStarted}</span>
+                <span className="fl-lang">
+                  {primaryAction === 'login' ? copy.nav.login : copy.nav.getStarted}
+                </span>
               </Link>
             )}
           </div>

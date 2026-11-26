@@ -108,13 +108,13 @@ test('Achievement catalog has exact 26 achievements across 5 categories and eval
   assert.equal(firstFact?.unlocked, true);
 });
 
-test('Analytics metrics, monthly rolling 4-week breakdown, CSV export, and ML demo adapter guard behave truthfully', () => {
+test('Analytics metrics, monthly rolling 4-week breakdown, CSV export, and honest ML status guard behave truthfully', () => {
   const sparse = [makeSession({ id: 's1' }), makeSession({ id: 's2' })];
   assert.equal(generateDeterministicInsights(sparse).length, 0);
-  const sparseMl = mlService.generateDemoPrediction(sparse);
-  assert.equal(sparseMl.isDemonstration, true);
+  const sparseMl = mlService.getMlStatus(sparse);
   assert.equal(sparseMl.available, false);
   assert.equal(sparseMl.confidenceScore, null);
+  assert.equal(sparseMl.sampleCount, 2);
 
   const rich = [
     makeSession({ id: 's1', awayEvents: 1, phoneLiftEvents: 2 }),
@@ -132,10 +132,10 @@ test('Analytics metrics, monthly rolling 4-week breakdown, CSV export, and ML de
   assert.equal(monthly.length, 4);
   assert.equal(monthly[3].focusMinutes, 60);
 
-  const mlSummary = mlService.generateDemoPrediction(rich);
-  assert.equal(mlSummary.isDemonstration, true);
-  assert.equal(mlSummary.available, true);
+  const mlSummary = mlService.getMlStatus(rich);
+  assert.equal(mlSummary.available, false);
   assert.equal(mlSummary.confidenceScore, null); // Never fabricated
+  assert.equal(mlSummary.sampleCount, 3);
 
   const insights = generateDeterministicInsights(rich);
   assert.ok(insights.length >= 2);
@@ -149,12 +149,12 @@ test('Analytics metrics, monthly rolling 4-week breakdown, CSV export, and ML de
 test('Registration validation enforces name rules, email uniqueness, password spaces/strength, and separate Terms & Privacy consent', () => {
   const invalid = validateRegistration({
     name: '12345',
-    email: 'nadia@focuslamp.demo',
+    email: 'alex@study.edu',
     password: 'pass word1',
     confirmPassword: 'other',
     acceptedTerms: false,
     acceptedPrivacy: false,
-    existingEmails: ['nadia@focuslamp.demo'],
+    existingEmails: ['alex@study.edu'],
   });
   assert.ok(invalid.name);
   assert.ok(invalid.email);
@@ -170,14 +170,14 @@ test('Registration validation enforces name rules, email uniqueness, password sp
     confirmPassword: 'focuspass1',
     acceptedTerms: true,
     acceptedPrivacy: true,
-    existingEmails: ['nadia@focuslamp.demo'],
+    existingEmails: ['alex@study.edu'],
   });
   assert.deepEqual(valid, {});
 });
 
-test('Simulated auth token validation enforces expiration and single-use behavior', () => {
+test('Auth token validation enforces expiration and single-use behavior', () => {
   const now = 1_700_000_000_000;
-  const reset = authService.createResetToken('nadia@focuslamp.demo', now);
+  const reset = authService.createResetToken('alex@study.edu', now);
   assert.equal(authService.validateToken(reset, now + 60_000).valid, true);
   assert.equal(authService.validateToken(reset, now + 31 * 60_000).reason, 'expired');
   assert.equal(authService.validateToken({ ...reset, used: true }, now + 60_000).reason, 'already_used');
@@ -239,11 +239,11 @@ test('FocusMate AI suggested prompts cover study tips, motivation, and focus str
   assert.equal(getSuggestedPrompts('en', 'motivation').length, 2);
   assert.equal(getSuggestedPrompts('en', 'focus').length, 2);
 
-  const mockUser: UserProfile = {
+  const testUser: UserProfile = {
     id: 'u1',
-    accountType: 'demo',
-    name: 'Nadia Pratama',
-    email: 'nadia@focuslamp.demo',
+    accountType: 'registered',
+    name: 'Alex Pratama',
+    email: 'alex@study.edu',
     emailVerified: true,
     pendingEmail: null,
     roleLabel: 'Student',
@@ -251,7 +251,6 @@ test('FocusMate AI suggested prompts cover study tips, motivation, and focus str
     avatarUrl: '',
     joinedAt: '2026-11-01',
     createdAtIso: '2026-11-01T08:00:00.000Z',
-    isDemo: true,
     onboardingCompleted: true,
     preferences: {
       language: 'en',
@@ -268,13 +267,13 @@ test('FocusMate AI suggested prompts cover study tips, motivation, and focus str
   const sessions = [makeSession({ id: 's1' }), makeSession({ id: 's2' }), makeSession({ id: 's3' })];
   const streak = calculateStreakInfo(sessions, '2026-11-21');
 
-  const summary = buildAiContextSummary({ user: mockUser, sessions, streak, language: 'en' });
-  assert.ok(summary.includes('Nadia Pratama'));
+  const summary = buildAiContextSummary({ user: testUser, sessions, streak, language: 'en' });
+  assert.ok(summary.includes('Alex Pratama'));
   assert.ok(summary.includes('Total Recorded Sessions: 3'));
 
   for (const item of enAll) {
     const preview = aiService.generateOfflineContextPreview(item.prompt, {
-      user: mockUser,
+      user: testUser,
       sessions,
       streak,
       language: 'en',

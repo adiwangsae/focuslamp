@@ -48,6 +48,18 @@ export const BrandLogoLink: React.FC<BrandLogoLinkProps> = ({ variant }) => {
     });
 
     if (outcome.action === 'scroll-top') {
+      if (typeof document !== 'undefined') {
+        const appScrollEl = document.querySelector<HTMLElement>('[data-app-scroll-container="true"]');
+        if (appScrollEl) {
+          if (appScrollEl.scrollTop > 4) {
+            appScrollEl.scrollTo({
+              top: 0,
+              behavior: prefersReduced ? 'auto' : 'smooth',
+            });
+          }
+          return;
+        }
+      }
       if (typeof window !== 'undefined' && window.scrollY > 4) {
         window.scrollTo({
           top: 0,

@@ -10,7 +10,6 @@ import {
   ChevronUp,
   ExternalLink,
   History,
-  Info,
   Lightbulb,
   MessageSquare,
   Plus,
@@ -20,7 +19,6 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { TypingDots } from '../components/motion/MotionPrimitives';
-import { DEMO_MODE_ENABLED, isDemoAccount } from '../config/demoConfig';
 import { useApp } from '../contexts/AppContext';
 import { SCIENCE_FACTS } from '../data/scienceFacts';
 import { getSuggestedPrompts, PromptCategory } from '../services/aiService';
@@ -58,7 +56,6 @@ function formatShortTime(iso: string, lang: 'en' | 'id'): string {
 
 export const FocusMatePage: React.FC = () => {
   const {
-    currentUser,
     copy,
     language,
     sessions,
@@ -80,7 +77,6 @@ export const FocusMatePage: React.FC = () => {
 
   const navigate = useNavigate();
   const prefersReduced = useReducedMotion();
-  const isDemo = DEMO_MODE_ENABLED && isDemoAccount(currentUser);
 
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('chat');
   const [activeTab, setActiveTab] = useState<AiTab>('insights');
@@ -358,20 +354,13 @@ export const FocusMatePage: React.FC = () => {
             {language === 'id' ? 'h beruntun' : 'd streak'}
           </span>
         </div>
-        {isDemo ? (
-          <p className="fl-type-label mt-1.5 flex items-start gap-1.5 leading-relaxed text-[var(--fl-muted)]">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--fl-primary)]" strokeWidth={1.5} aria-hidden="true" />
-            <span>{copy.ai.simDisclaimer}</span>
-          </p>
-        ) : (
-          <p className="fl-type-label mt-1.5 text-[var(--fl-muted)] tabular-nums">
-            {sessions.length === 0
-              ? language === 'id'
-                ? 'Belum ada sesi tercatat pada akun Anda.'
-                : 'No focus sessions logged on your account yet.'
-              : `${sessions.length} ${language === 'id' ? 'sesi tercatat' : 'logged sessions'}`}
-          </p>
-        )}
+        <p className="fl-type-label mt-1.5 text-[var(--fl-muted)] tabular-nums">
+          {sessions.length === 0
+            ? language === 'id'
+              ? 'Belum ada sesi tercatat pada akun Anda.'
+              : 'No focus sessions logged on your account yet.'
+            : `${sessions.length} ${language === 'id' ? 'sesi tercatat' : 'logged sessions'}`}
+        </p>
       </div>
     </div>
   );
@@ -800,13 +789,6 @@ export const FocusMatePage: React.FC = () => {
             className="fl-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6"
           >
             <div className="mx-auto w-full max-w-[920px] space-y-5">
-              {isDemo && (
-                <div className="fl-card-soft fl-type-support flex items-start gap-3 p-4 text-[var(--fl-primary)]">
-                  <Info className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-                  <span>{copy.ai.simDisclaimer}</span>
-                </div>
-              )}
-
               <div className="flex justify-center lg:justify-start">
                 <div className="fl-scrollbar inline-flex max-w-full gap-1 overflow-x-auto rounded-full bg-[var(--fl-surface-subtle)] p-1">
                   {(

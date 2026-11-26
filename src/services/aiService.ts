@@ -1,5 +1,4 @@
 import { ChatMessage, FocusSession, Language, StreakInfo, UserProfile } from '../types';
-import { resolveAccountType } from '../config/demoConfig';
 import { deriveDashboardMetrics, MIN_SESSIONS_FOR_PERSONALIZED_INSIGHT } from '../utils/analytics';
 import { calculateTotalXp, getLevelInfo } from '../utils/gamification';
 
@@ -148,7 +147,7 @@ export const aiService = {
           language: ctx.language,
           history: compactHistory,
           contextSummary: {
-            accountType: resolveAccountType(ctx.user),
+            accountType: 'registered',
             studentFirstName: ctx.user.name.trim().split(' ')[0] || 'Student',
             totalSessions: metrics.totalSessions,
             completedSessions: metrics.completedSessions,

@@ -2,14 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
-  BluetoothOff,
   CheckCircle2,
-  FlaskConical,
-  RefreshCw,
-  ShieldAlert,
   Smartphone,
-  UserCheck,
-  UserX,
   Wifi,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -20,7 +14,6 @@ import {
   StaggerItem,
 } from '../components/motion/MotionPrimitives';
 import { StatusBadge } from '../components/common/StatePrimitives';
-import { DEMO_MODE_ENABLED, isDemoAccount } from '../config/demoConfig';
 import { useApp } from '../contexts/AppContext';
 import { SessionStatus } from '../types';
 import { FL_EASE_STANDARD } from '../utils/motion';
@@ -40,25 +33,16 @@ export const FocusPage: React.FC = () => {
     copy,
     language,
     device,
-    setPhoneDocked,
     activeSession,
     lastCompletedSession,
     startFocusSession,
     endFocusSessionManually,
     saveSessionReflection,
     clearLastCompletedSession,
-    simulatePhoneLift,
-    simulatePhoneReturn,
-    simulateUserAway,
-    simulateUserReturn,
-    simulateBleDisconnect,
-    simulateBleReconnect,
-    simulateCompleteSessionNow,
     levelInfo,
   } = useApp();
 
   const navigate = useNavigate();
-  const isDemo = DEMO_MODE_ENABLED && isDemoAccount(currentUser);
 
   const [plannedMinutes, setPlannedMinutes] = useState<number>(
     currentUser?.preferences.defaultFocusMinutes ?? 25
@@ -73,7 +57,12 @@ export const FocusPage: React.FC = () => {
 
   useEffect(() => {
     if (hasActiveSession || completedSessionId) {
-      window.scrollTo({ top: 0, behavior: 'auto' });
+      const appScrollEl = document.querySelector<HTMLElement>('[data-app-scroll-container="true"]');
+      if (appScrollEl) {
+        appScrollEl.scrollTo({ top: 0, behavior: 'auto' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
     }
   }, [hasActiveSession, completedSessionId]);
 
@@ -94,18 +83,12 @@ export const FocusPage: React.FC = () => {
 
   const handleStart = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((isDemo || device.connected) && !device.phoneDocked) {
+    if (device.connected && !device.phoneDocked) {
       setSetupError(copy.focus.dockRequiredWarning);
       return;
     }
     if (plannedMinutes < 1 || plannedMinutes > 60) {
-      setSetupError(
-        isDemo
-          ? copy.focus.prototypeLimitNote
-          : language === 'id'
-          ? 'Durasi fokus harus antara 1 hingga 60 menit.'
-          : 'Focus duration must be between 1 and 60 minutes.'
-      );
+      setSetupError(copy.focus.durationRangeNote);
       return;
     }
     setSetupError('');
@@ -284,7 +267,7 @@ export const FocusPage: React.FC = () => {
               </AnimatePresence>
 
               {/* Telemetry or Software Mode Summary Row */}
-              {!isDemo && !device.connected ? (
+              {!device.connected ? (
                 <div
                   data-testid="active-software-mode-strip"
                   className="fl-type-support mt-7 grid grid-cols-2 gap-3 border-t border-[var(--fl-border)]/70 pt-6 text-center lg:text-left"
@@ -356,115 +339,6 @@ export const FocusPage: React.FC = () => {
           </section>
         </StaggerItem>
 
-        {/* Separate Demo Controls Area (strictly demo accounts only, visually calmer during FOCUSING) */}
-        {isDemo && (
-          <StaggerItem>
-            <section
-              data-testid="focus-demo-controls"
-              className={`rounded-[18px] border border-dashed border-[var(--fl-border)] bg-[var(--fl-surface-subtle)] p-5 text-center transition-opacity duration-200 lg:text-left ${
-                isFocusingCalm ? 'opacity-70 hover:opacity-100 focus-within:opacity-100' : ''
-              }`}
-            >
-              <div className="fl-type-card flex items-center justify-center gap-2 lg:justify-start">
-                <FlaskConical className="h-4 w-4 text-[var(--fl-primary)]" strokeWidth={1.5} aria-hidden="true" />
-                <h2>{copy.focus.demoControlsTitle}</h2>
-              </div>
-              <p className="fl-type-support mt-1 text-[var(--fl-muted)]">
-                {copy.focus.demoControlsHint}
-              </p>
-
-              <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
-                {activeSession.state === 'PHONE_LIFTED' ? (
-                  <button
-                    type="button"
-                    onClick={simulatePhoneReturn}
-                    className="fl-btn fl-type-label inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[var(--fl-sage-border)] bg-[var(--fl-surface)] px-3.5 py-2 font-semibold text-[var(--fl-sage)] hover:bg-[var(--fl-sage-soft)]"
-                  >
-                    <Smartphone className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-                    <span>
-                      {language === 'id' ? 'Kembalikan Ponsel ke Dock' : 'Return Phone to Dock'}
-                    </span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={simulatePhoneLift}
-                    className="fl-btn fl-type-label inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[var(--fl-border)] bg-[var(--fl-surface)] px-3.5 py-2 hover:bg-[var(--fl-soft-blue)]"
-                  >
-                    <ShieldAlert className="h-3.5 w-3.5 text-red-600" strokeWidth={1.5} aria-hidden="true" />
-                    <span>
-                      {language === 'id' ? 'Simulasikan Ponsel Diangkat' : 'Simulate Phone Lifted'}
-                    </span>
-                  </button>
-                )}
-
-                {activeSession.state === 'AWAY' ? (
-                  <button
-                    type="button"
-                    onClick={simulateUserReturn}
-                    className="fl-btn fl-type-label inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[var(--fl-sage-border)] bg-[var(--fl-surface)] px-3.5 py-2 font-semibold text-[var(--fl-sage)] hover:bg-[var(--fl-sage-soft)]"
-                  >
-                    <UserCheck className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-                    <span>
-                      {language === 'id' ? 'Simulasikan Kembali ke Meja' : 'Simulate User Return'}
-                    </span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={simulateUserAway}
-                    className="fl-btn fl-type-label inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[var(--fl-border)] bg-[var(--fl-surface)] px-3.5 py-2 hover:bg-[var(--fl-soft-blue)]"
-                  >
-                    <UserX className="h-3.5 w-3.5 text-[#D99B38]" strokeWidth={1.5} aria-hidden="true" />
-                    <span>
-                      {language === 'id' ? 'Simulasikan Meninggalkan Meja' : 'Simulate Away'}
-                    </span>
-                  </button>
-                )}
-
-                {activeSession.state === 'CONNECTION_LOST' ||
-                activeSession.state === 'RECONNECTING' ? (
-                  <button
-                    type="button"
-                    onClick={simulateBleReconnect}
-                    className="fl-btn fl-type-label inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-blue-300 bg-[var(--fl-surface)] px-3.5 py-2 font-semibold text-[var(--fl-primary)] hover:bg-[var(--fl-soft-blue)] dark:border-blue-800"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-                    <span>
-                      {language === 'id' ? 'Simulasikan BLE Tersambung' : 'Simulate BLE Reconnect'}
-                    </span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={simulateBleDisconnect}
-                    className="fl-btn fl-type-label inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[var(--fl-border)] bg-[var(--fl-surface)] px-3.5 py-2 hover:bg-[var(--fl-soft-blue)]"
-                  >
-                    <BluetoothOff className="h-3.5 w-3.5 text-[#D99B38]" strokeWidth={1.5} aria-hidden="true" />
-                    <span>
-                      {language === 'id' ? 'Simulasikan BLE Terputus' : 'Simulate BLE Disconnect'}
-                    </span>
-                  </button>
-                )}
-              </div>
-
-              <div className="mt-3 flex justify-center border-t border-[var(--fl-border)] pt-3 lg:justify-end">
-                <button
-                  type="button"
-                  onClick={simulateCompleteSessionNow}
-                  className="fl-btn fl-type-label inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-[var(--fl-primary)]/30 bg-[var(--fl-surface)] px-4 py-2 font-semibold text-[var(--fl-primary)] hover:bg-[var(--fl-soft-blue)]"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-                  <span>
-                    {language === 'id'
-                      ? 'Selesaikan Sesi Cepat (Demo)'
-                      : 'Fast-Forward to Complete (Demo)'}
-                  </span>
-                </button>
-              </div>
-            </section>
-          </StaggerItem>
-        )}
       </StaggerGrid>
     );
   }
@@ -600,14 +474,14 @@ export const FocusPage: React.FC = () => {
         <div>
           <h1 className="fl-type-page">{copy.focus.setupTitle}</h1>
           <p className="fl-type-support mt-1 text-[var(--fl-muted)]">
-            {!isDemo && !device.connected
+            {!device.connected
               ? language === 'id'
                 ? 'Pilih durasi blok belajar dan topik opsional untuk memulai sesi fokus Anda.'
                 : 'Choose a study block duration and an optional topic to start your focus session.'
               : copy.focus.setupSubtitle}
           </p>
         </div>
-        {!isDemo && !device.connected ? (
+        {!device.connected ? (
           <StatusBadge tone="sage">
             {language === 'id' ? 'Timer Perangkat Lunak' : 'Software Timer'}
           </StatusBadge>
@@ -668,11 +542,7 @@ export const FocusPage: React.FC = () => {
                 className="fl-input fl-type-body w-24 border border-[var(--fl-border)] bg-[var(--fl-bg)] px-3 py-1.5 text-center text-[var(--fl-text)] tabular-nums lg:text-left"
               />
               <span className="fl-lang fl-type-support text-[var(--fl-muted)]">
-                {isDemo
-                  ? copy.focus.prototypeLimitNote
-                  : language === 'id'
-                  ? 'Rentang: 1–60 menit per blok fokus.'
-                  : 'Range: 1–60 minutes per focus block.'}
+                {copy.focus.durationRangeNote}
               </span>
             </div>
           </div>
@@ -693,7 +563,7 @@ export const FocusPage: React.FC = () => {
           </div>
 
           {/* Device Readiness or Software Timer Notice */}
-          {!isDemo && !device.connected ? (
+          {!device.connected ? (
             <div
               data-testid="focus-software-mode-card"
               className="fl-card-sage p-4 text-center sm:p-5 lg:text-left"
@@ -745,7 +615,7 @@ export const FocusPage: React.FC = () => {
                 <div className="flex items-center justify-center gap-2 lg:justify-start">
                   <CheckCircle2 className="h-4 w-4 text-[var(--fl-primary)]" strokeWidth={1.5} aria-hidden="true" />
                   <span>
-                    {language === 'id' ? 'DND (Simulasi): ' : 'DND (Simulated): '}
+                    {language === 'id' ? 'Mode Fokus DND: ' : 'DND Focus Mode: '}
                     <strong className="font-semibold">
                       {language === 'id' ? 'Siap saat mulai' : 'Ready on start'}
                     </strong>
@@ -767,18 +637,6 @@ export const FocusPage: React.FC = () => {
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
                       <span>{copy.focus.dockRequiredWarning}</span>
                     </div>
-                    {isDemo && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPhoneDocked(true);
-                          setSetupError('');
-                        }}
-                        className="fl-btn fl-type-label rounded-full border border-amber-400 bg-white px-3 py-1 font-semibold text-amber-900 hover:bg-amber-100 dark:bg-[#151F34] dark:text-amber-200"
-                      >
-                        {language === 'id' ? 'Simulasikan Letakkan Ponsel' : 'Simulate Dock Phone'}
-                      </button>
-                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -793,7 +651,7 @@ export const FocusPage: React.FC = () => {
           <div className="flex items-center justify-center gap-3 lg:justify-end">
             <button
               type="submit"
-              disabled={isDemo || device.connected ? !device.phoneDocked : false}
+              disabled={device.connected ? !device.phoneDocked : false}
               className="fl-btn-primary !min-h-[48px] !px-7 disabled:cursor-not-allowed disabled:opacity-45"
             >
               <span className="fl-lang">{copy.focus.startFocus}</span>

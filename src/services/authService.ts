@@ -1,4 +1,4 @@
-export interface SimulatedTokenRecord {
+export interface AuthTokenRecord {
   token: string;
   email: string;
   kind: 'verify_email' | 'reset_password' | 'change_email';
@@ -121,7 +121,7 @@ export const authService = {
     }
   },
 
-  createVerificationToken(email: string, nowMs = Date.now()): SimulatedTokenRecord {
+  createVerificationToken(email: string, nowMs = Date.now()): AuthTokenRecord {
     const normalized = email.trim().toLowerCase();
     return {
       token: `vrf-${nowMs}-${Math.random().toString(36).slice(2, 8)}`,
@@ -137,7 +137,7 @@ export const authService = {
     currentEmail: string,
     newEmail: string,
     nowMs = Date.now()
-  ): SimulatedTokenRecord {
+  ): AuthTokenRecord {
     return {
       token: `chg-${nowMs}-${Math.random().toString(36).slice(2, 8)}`,
       email: currentEmail.trim().toLowerCase(),
@@ -149,7 +149,7 @@ export const authService = {
     };
   },
 
-  createResetToken(email: string, nowMs = Date.now()): SimulatedTokenRecord {
+  createResetToken(email: string, nowMs = Date.now()): AuthTokenRecord {
     return {
       token: `rst-${nowMs}-${Math.random().toString(36).slice(2, 8)}`,
       email: email.trim().toLowerCase(),
@@ -161,7 +161,7 @@ export const authService = {
   },
 
   validateToken(
-    record: SimulatedTokenRecord | undefined | null,
+    record: AuthTokenRecord | undefined | null,
     nowMs = Date.now()
   ): { valid: boolean; reason?: 'not_found' | 'already_used' | 'expired' } {
     if (!record) {

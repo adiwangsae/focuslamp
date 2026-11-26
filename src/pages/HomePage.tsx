@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AnimatedNumber, StaggerGrid, StaggerItem } from '../components/motion/MotionPrimitives';
-import { DEMO_MODE_ENABLED, isDemoAccount } from '../config/demoConfig';
 import { useApp } from '../contexts/AppContext';
 import { toLocalDateString } from '../utils/gamification';
 import { generateDeterministicInsights } from '../utils/analytics';
@@ -46,7 +45,6 @@ export const HomePage: React.FC = () => {
     achievements,
   } = useApp();
 
-  const isDemo = DEMO_MODE_ENABLED && isDemoAccount(currentUser);
   const firstName = currentUser?.name?.trim().split(/\s+/)[0] ?? '';
   const isFirstHomeVisit = Boolean(currentUser && currentUser.welcomeGreetingSeen === false);
 
@@ -105,7 +103,6 @@ export const HomePage: React.FC = () => {
         <div>
           <p className="fl-type-overline text-[var(--fl-muted)]">
             {formattedDate}
-            {isDemo ? ` · ${copy.common.demoDataBadge}` : ''}
           </p>
           <h1 className="fl-type-page mt-1 text-[var(--fl-text)]" data-testid="home-greeting-heading">
             {greeting}
@@ -221,7 +218,7 @@ export const HomePage: React.FC = () => {
                     <Cpu className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                   </span>
                   <h2 className="fl-type-card truncate">
-                    {!isDemo && !device.connected ? copy.home.deviceCardTitle : device.deviceName}
+                    {!device.connected ? copy.home.deviceCardTitle : device.deviceName}
                   </h2>
                 </div>
                 <Link
@@ -229,7 +226,7 @@ export const HomePage: React.FC = () => {
                   className="fl-btn fl-type-nav shrink-0 rounded-full px-3 py-1 text-[var(--fl-primary)] hover:bg-[var(--fl-soft-blue)] whitespace-nowrap"
                 >
                   <span className="fl-lang">
-                    {!isDemo && !device.connected
+                    {!device.connected
                       ? language === 'id'
                         ? 'Hubungkan'
                         : 'Connect'
@@ -240,7 +237,7 @@ export const HomePage: React.FC = () => {
                 </Link>
               </div>
 
-              {!isDemo && !device.connected ? (
+              {!device.connected ? (
                 <div className="mt-5 space-y-3 text-center lg:text-left" data-testid="home-no-device-state">
                   <div className="inline-flex items-center gap-2 rounded-full bg-[var(--fl-surface-subtle)] px-3.5 py-1.5 fl-type-label font-medium text-[var(--fl-muted)]">
                     <WifiOff className="h-3.5 w-3.5 text-[var(--fl-muted)]" strokeWidth={1.5} aria-hidden="true" />
@@ -324,13 +321,7 @@ export const HomePage: React.FC = () => {
                   {lastSyncFormatted && (
                     <div className="fl-type-label flex items-center justify-between border-t border-[var(--fl-border)]/70 pt-3 text-[var(--fl-muted)]">
                       <dt>
-                        {isDemo
-                          ? language === 'id'
-                            ? 'Sinkronisasi terakhir (simulasi)'
-                            : 'Last sync (simulated)'
-                          : language === 'id'
-                          ? 'Sinkronisasi terakhir'
-                          : 'Last sync'}
+                        {language === 'id' ? 'Sinkronisasi terakhir' : 'Last sync'}
                       </dt>
                       <dd className="tabular-nums">{lastSyncFormatted}</dd>
                     </div>
@@ -339,7 +330,7 @@ export const HomePage: React.FC = () => {
               )}
             </div>
 
-            {!isDemo && !device.connected && (
+            {!device.connected && (
               <div className="mt-5 border-t border-[var(--fl-border)]/70 pt-3.5 text-center lg:text-left">
                 <Link
                   to="/device"
@@ -406,10 +397,6 @@ export const HomePage: React.FC = () => {
                     ? language === 'id'
                       ? `${levelInfo.xpToNextLevel} XP menuju Level ${levelInfo.level + 1}`
                       : `${levelInfo.xpToNextLevel} XP to Level ${levelInfo.level + 1}`
-                    : isDemo
-                    ? language === 'id'
-                      ? 'Level prototipe maksimum tercapai'
-                      : 'Maximum prototype level reached'
                     : language === 'id'
                     ? 'Level maksimum tercapai'
                     : 'Maximum level reached'}
@@ -451,7 +438,7 @@ export const HomePage: React.FC = () => {
                   </span>
                   <h2 className="fl-type-card">{copy.home.aiInsightTitle}</h2>
                 </div>
-                {(isDemo || topInsight) ? (
+                {topInsight ? (
                   <span className="fl-lang fl-type-overline text-[var(--fl-sage)]">
                     {language === 'id' ? 'Deterministik' : 'Deterministic'}
                   </span>

@@ -1,9 +1,8 @@
-# FocusLamp FastAPI Backend Structure (Future API Integration)
+# FocusLamp FastAPI Backend Structure
 
-This directory provides the Python / FastAPI / Pydantic / Pandas / NumPy / Scikit-learn scaffolding prepared for FocusLamp's future production backend.
+This directory provides the Python / FastAPI / Pydantic / Pandas / NumPy / Scikit-learn scaffolding prepared for FocusLamp's Python API service.
 
-## Important Security & Prototype Notice
-- The interactive web demo runs client-side simulations and does **not** require this Python runtime to execute.
+## Security & Deployment
 - Production deployment must enforce server-side authentication (JWT/OAuth), per-user database authorization, HTTPS, rate limiting, and proper secret management via environment variables.
 
 ## Local Setup (when running Python 3.11+)

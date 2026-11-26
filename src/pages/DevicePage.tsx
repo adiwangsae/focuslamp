@@ -1,63 +1,36 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  AlertTriangle,
   ArrowRight,
   Bluetooth,
   BluetoothOff,
   ChevronDown,
   ChevronUp,
   Cpu,
-  Info,
   LampDesk,
-  RefreshCw,
   Smartphone,
   Sun,
   UserCheck,
   Wifi,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
 import {
   AnimatedCollapse,
-  AnimatedSwitch,
   StaggerGrid,
   StaggerItem,
 } from '../components/motion/MotionPrimitives';
-import { ErrorState, StatusBadge } from '../components/common/StatePrimitives';
-import { DEMO_MODE_ENABLED, isDemoAccount } from '../config/demoConfig';
+import { StatusBadge } from '../components/common/StatePrimitives';
 import { useApp } from '../contexts/AppContext';
 import { DeviceConnectionStatus } from '../types';
-import { FL_EASE_STANDARD } from '../utils/motion';
-
-const CONNECTION_STATES: DeviceConnectionStatus[] = [
-  'Connected',
-  'Connecting',
-  'Reconnecting',
-  'Disconnected',
-  'Connection Failed',
-];
 
 export const DevicePage: React.FC = () => {
   const {
-    currentUser,
     copy,
     language,
     device,
-    setDeviceConnected,
-    setDeviceConnectionStatus,
-    setPhoneDocked,
-    setUserPresent,
-    setAmbientLightLux,
-    setLampOn,
-    setLampBrightness,
-    setLampColorTemp,
-    syncDeviceNow,
   } = useApp();
 
   const [techExpanded, setTechExpanded] = useState(false);
   const [hardwareProbeChecked, setHardwareProbeChecked] = useState(false);
-
-  const isDemo = DEMO_MODE_ENABLED && isDemoAccount(currentUser);
 
   const connectionLabelMap: Record<DeviceConnectionStatus, string> = {
     Connected: copy.common.connected,
@@ -67,8 +40,8 @@ export const DevicePage: React.FC = () => {
     'Connection Failed': copy.common.connectionFailed,
   };
 
-  // Registered user view when no real FocusLamp companion hardware is paired
-  if (!isDemo && !device.connected) {
+  // Disconnected view when no real FocusLamp companion hardware is paired
+  if (!device.connected) {
     return (
       <StaggerGrid className="space-y-8">
         <StaggerItem className="flex flex-col items-center justify-between gap-3 text-center lg:flex-row lg:items-end lg:text-left">
@@ -199,10 +172,6 @@ export const DevicePage: React.FC = () => {
       ? 'primary'
       : 'danger';
 
-  const needsTroubleshooting =
-    device.connectionStatus === 'Disconnected' ||
-    device.connectionStatus === 'Connection Failed';
-
   return (
     <StaggerGrid className="space-y-8">
       <StaggerItem className="flex flex-col items-center justify-between gap-4 text-center lg:flex-row lg:items-end lg:text-left">
@@ -217,107 +186,7 @@ export const DevicePage: React.FC = () => {
             {copy.device.subtitle}
           </p>
         </div>
-        {isDemo && (
-          <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
-            <button
-              type="button"
-              onClick={() => syncDeviceNow(true)}
-              className="fl-btn fl-type-label min-h-[40px] rounded-full border border-amber-300 bg-amber-50/75 px-4 py-2 font-semibold text-amber-900 hover:bg-amber-100 whitespace-nowrap dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300"
-            >
-              <span className="fl-lang">
-                {language === 'id' ? 'Simulasikan Gagal Sinkron' : 'Simulate Sync Failure'}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => syncDeviceNow(false)}
-              className="fl-btn-secondary !min-h-[40px]"
-            >
-              <RefreshCw className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-              <span>{language === 'id' ? 'Sinkronkan Simulasi' : 'Sync Telemetry'}</span>
-            </button>
-          </div>
-        )}
       </StaggerItem>
-
-      {/* Clear Simulated Prototype Notice (Demo only) */}
-      {isDemo && (
-        <StaggerItem>
-          <div className="fl-card-soft fl-type-support flex flex-col items-center gap-2.5 border border-[var(--fl-primary)]/12 p-4 text-center text-[var(--fl-primary)] lg:flex-row lg:items-start lg:gap-3 lg:text-left">
-            <Info className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-            <span className="fl-lang">{copy.device.simBanner}</span>
-          </div>
-        </StaggerItem>
-      )}
-
-      {/* Simulated Sync Failure or Connection Troubleshooting Alert (Demo only) */}
-      {isDemo && (
-        <AnimatePresence>
-          {device.syncFailed && (
-            <motion.div
-              key="sync-failed-alert"
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.18, ease: FL_EASE_STANDARD }}
-            >
-              <ErrorState
-                title={
-                  language === 'id'
-                    ? 'Sinkronisasi telemetri gagal (simulasi)'
-                    : 'Simulated telemetry sync failed'
-                }
-                message={
-                  language === 'id'
-                    ? 'Lampu FocusLamp FL-01 tidak merespons sinkronisasi Wi-Fi dalam batas waktu simulasi. Coba sinkronkan ulang.'
-                    : 'FocusLamp FL-01 did not acknowledge Wi-Fi telemetry within the simulated timeout window.'
-                }
-                retryLabel={language === 'id' ? 'Coba Sinkron Lagi' : 'Retry Sync'}
-                onRetry={() => syncDeviceNow(false)}
-              />
-            </motion.div>
-          )}
-
-          {needsTroubleshooting && (
-            <motion.div
-              key="ble-troubleshoot"
-              role="status"
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.18, ease: FL_EASE_STANDARD }}
-              className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-200"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex items-start gap-2.5">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-                  <div>
-                    <p className="font-semibold">
-                      {language === 'id'
-                        ? 'Panduan Pemulihan Koneksi FocusLamp'
-                        : 'FocusLamp Connection Troubleshooting'}
-                    </p>
-                    <p className="mt-0.5 text-xs opacity-90">
-                      {language === 'id'
-                        ? 'Pastikan daya lampu menyala, jarak ponsel berada di dekat meja belajar, dan aktifkan kembali koneksi BLE simulasi.'
-                        : 'Ensure the desk lamp is powered on, your phone is near the study desk, and re-initiate simulated BLE pairing.'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => syncDeviceNow(false)}
-                  className="fl-btn rounded-full border border-amber-400 bg-white px-3.5 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100 dark:bg-[#161F33] dark:text-amber-200"
-                >
-                  <span className="fl-lang">
-                    {language === 'id' ? 'Hubungkan Ulang' : 'Reconnect Device'}
-                  </span>
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
 
       {/* Status Grid with Varied Visual Weight */}
       <StaggerItem>
@@ -351,8 +220,8 @@ export const DevicePage: React.FC = () => {
             </p>
             <p className="fl-type-support mt-1 text-[var(--fl-muted)]">
               {language === 'id'
-                ? 'Sensor induktif / Hall dock (Simulasi)'
-                : 'Hall / inductive presence pad (Simulated)'}
+                ? 'Sensor induktif / Hall dock'
+                : 'Hall / inductive presence pad'}
             </p>
           </div>
 
@@ -405,8 +274,8 @@ export const DevicePage: React.FC = () => {
             </p>
             <p className="fl-type-support mt-1 text-[var(--fl-muted)]">
               {language === 'id'
-                ? 'Sensor jarak meja mmWave / IR (Simulasi)'
-                : 'mmWave / IR desk proximity (Simulated)'}
+                ? 'Sensor jarak meja mmWave / IR'
+                : 'mmWave / IR desk proximity'}
             </p>
           </div>
 
@@ -453,8 +322,8 @@ export const DevicePage: React.FC = () => {
                   : 'Sync Failed'
                 : device.wifiConnected
                 ? language === 'id'
-                  ? 'Tersinkron (Simulasi)'
-                  : 'Synced (Simulated)'
+                  ? 'Tersinkron'
+                  : 'Synced'
                 : 'Offline'}
             </p>
             <p className="fl-type-support mt-1 text-[var(--fl-muted)] tabular-nums">
@@ -463,158 +332,6 @@ export const DevicePage: React.FC = () => {
           </div>
         </div>
       </StaggerItem>
-
-      {/* Simulation Controls (Demo accounts only) */}
-      {isDemo && (
-        <StaggerItem>
-          <section className="fl-card p-6">
-            <div className="text-center lg:text-left">
-              <h2 className="fl-type-card">{copy.device.simControlsTitle}</h2>
-              <p className="fl-type-support mt-1 text-[var(--fl-muted)]">
-                {language === 'id'
-                  ? 'Sesuaikan status perangkat keras dan sensor simulasi untuk melihat respons FocusLamp di seluruh halaman.'
-                  : 'Adjust simulated hardware states and sensors to inspect how FocusLamp responds across pages.'}
-              </p>
-            </div>
-
-            {/* BLE 5-State Simulator */}
-            <div className="mt-4 rounded-2xl bg-[var(--fl-surface-subtle)] p-4 text-center lg:text-left">
-              <p className="fl-type-label mb-2.5 text-[var(--fl-muted)]">
-                {language === 'id' ? 'Simulasi Status Koneksi BLE' : 'BLE Connection State Simulator'}
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
-                {CONNECTION_STATES.map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setDeviceConnectionStatus(st)}
-                    className={`fl-btn fl-type-label rounded-full px-3.5 py-1.5 font-medium ${
-                      device.connectionStatus === st
-                        ? 'bg-[#0F2557] text-white dark:bg-[#8BA8FF] dark:text-[#0D1424]'
-                        : 'border border-[var(--fl-border)] bg-[var(--fl-surface)] text-[var(--fl-muted)] hover:text-[var(--fl-text)]'
-                    }`}
-                  >
-                    <span className="fl-lang">{connectionLabelMap[st]}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-[var(--fl-surface-subtle)] p-3.5">
-                  <span className="fl-lang fl-type-support font-semibold">
-                    {language === 'id'
-                      ? 'Koneksi Bluetooth (Simulasi)'
-                      : 'Bluetooth Connection (Simulated)'}
-                  </span>
-                  <AnimatedSwitch
-                    checked={device.connected}
-                    onChange={setDeviceConnected}
-                    ariaLabel={
-                      language === 'id'
-                        ? 'Koneksi Bluetooth (Simulasi)'
-                        : 'Bluetooth Connection (Simulated)'
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-[var(--fl-surface-subtle)] p-3.5">
-                  <span className="fl-lang fl-type-support font-semibold">
-                    {language === 'id' ? 'Ponsel di Dock' : 'Phone Placed on Dock'}
-                  </span>
-                  <AnimatedSwitch
-                    checked={device.phoneDocked}
-                    onChange={setPhoneDocked}
-                    ariaLabel={language === 'id' ? 'Ponsel di Dock' : 'Phone Placed on Dock'}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-[var(--fl-surface-subtle)] p-3.5">
-                  <span className="fl-lang fl-type-support font-semibold">
-                    {language === 'id' ? 'Kehadiran Pengguna di Meja' : 'User Presence at Desk'}
-                  </span>
-                  <AnimatedSwitch
-                    checked={device.userPresent}
-                    onChange={setUserPresent}
-                    ariaLabel={
-                      language === 'id' ? 'Kehadiran Pengguna di Meja' : 'User Presence at Desk'
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="rounded-xl bg-[var(--fl-surface-subtle)] p-3.5">
-                  <div className="fl-type-support flex items-center justify-between">
-                    <label htmlFor="ambient-slider" className="font-semibold">
-                      {language === 'id' ? 'Cahaya Sekitar (Simulasi)' : 'Simulated Ambient Light'}
-                    </label>
-                    <span className="fl-type-label font-semibold tabular-nums">
-                      {device.ambientLightLux} lux
-                    </span>
-                  </div>
-                  <input
-                    id="ambient-slider"
-                    type="range"
-                    min={40}
-                    max={800}
-                    step={10}
-                    value={device.ambientLightLux}
-                    onChange={(e) => setAmbientLightLux(Number(e.target.value))}
-                    className="mt-2.5 w-full accent-[#0F2557] dark:accent-[#8BA8FF]"
-                  />
-                </div>
-
-                <div className="rounded-xl bg-[var(--fl-surface-subtle)] p-3.5">
-                  <div className="fl-type-support flex items-center justify-between">
-                    <span className="font-semibold">
-                      {language === 'id' ? 'Daya & Kecerahan Lampu' : 'Lamp Power & Brightness'}
-                    </span>
-                    <AnimatedSwitch
-                      checked={device.lampOn}
-                      onChange={setLampOn}
-                      ariaLabel={
-                        language === 'id' ? 'Daya Lampu FocusLamp' : 'FocusLamp Power'
-                      }
-                    />
-                  </div>
-                  <input
-                    aria-label={language === 'id' ? 'Kecerahan lampu' : 'Lamp brightness'}
-                    type="range"
-                    min={10}
-                    max={100}
-                    value={device.lampBrightness}
-                    onChange={(e) => setLampBrightness(Number(e.target.value))}
-                    className="mt-2.5 w-full accent-[#0F2557] dark:accent-[#8BA8FF]"
-                  />
-                  <div className="fl-type-support mt-2.5 flex items-center justify-between text-[var(--fl-muted)]">
-                    <span className="tabular-nums">
-                      {language === 'id' ? 'Suhu Warna' : 'Color Temp'}: {device.lampColorTempK}K
-                    </span>
-                    <div className="flex gap-1.5">
-                      {[3000, 4200, 5600].map((k) => (
-                        <button
-                          key={k}
-                          type="button"
-                          onClick={() => setLampColorTemp(k)}
-                          className={`fl-btn fl-type-label rounded-full px-2.5 py-0.5 tabular-nums ${
-                            device.lampColorTempK === k
-                              ? 'bg-[#0F2557] text-white dark:bg-[#8BA8FF] dark:text-[#0D1424]'
-                              : 'border border-[var(--fl-border)] bg-[var(--fl-surface)] text-[var(--fl-muted)] hover:text-[var(--fl-text)]'
-                          }`}
-                        >
-                          {k}K
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </StaggerItem>
-      )}
 
       {/* Expandable Technical Details */}
       <StaggerItem>
@@ -638,22 +355,22 @@ export const DevicePage: React.FC = () => {
               <dl className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div>
                   <dt className="font-semibold text-[var(--fl-text)]">
-                    {language === 'id' ? 'Model Perangkat (Prototipe)' : 'Hardware Model (Prototype)'}
+                    {language === 'id' ? 'Model Perangkat Keras' : 'Hardware Model'}
                   </dt>
                   <dd>
                     {language === 'id'
-                      ? 'FocusLamp FL-01 · Unit telemetri BLE 5.3 & Wi-Fi berbasis mikrokontroler (simulasi)'
-                      : 'FocusLamp FL-01 · BLE 5.3 & Wi-Fi telemetry unit (simulated)'}
+                      ? 'FocusLamp FL-01 · Unit telemetri BLE 5.3 & Wi-Fi berbasis mikrokontroler'
+                      : 'FocusLamp FL-01 · BLE 5.3 & Wi-Fi microcontroller telemetry unit'}
                   </dd>
                 </div>
                 <div>
                   <dt className="font-semibold text-[var(--fl-text)]">
-                    {language === 'id' ? 'Batas Timer Firmware' : 'Firmware Timer Bounds'}
+                    {language === 'id' ? 'Batas Timer Blok' : 'Block Timer Bounds'}
                   </dt>
                   <dd>
                     {language === 'id'
-                      ? 'Jendela hitung mundur prototipe 1–60 menit; pelacakan lokal tetap berjalan saat BLE terputus'
-                      : '1–60 minute prototype countdown window; local state resilience on BLE drop'}
+                      ? 'Jendela hitung mundur 1–60 menit; pelacakan lokal tetap berjalan saat BLE terputus'
+                      : '1–60 minute countdown window; local state resilience on BLE drop'}
                   </dd>
                 </div>
                 <div>
@@ -672,8 +389,8 @@ export const DevicePage: React.FC = () => {
                   </dt>
                   <dd>
                     {language === 'id'
-                      ? 'Hanya disimulasikan pada prototipe web; kontrol DND sistem OS memerlukan aplikasi pendamping seluler di masa depan.'
-                      : 'Simulated only in web prototype; OS-level DND control cannot run inside standard browsers without a native companion bridge.'}
+                      ? 'Kontrol DND tingkat sistem OS memerlukan aplikasi pendamping seluler asli.'
+                      : 'OS-level DND control requires a native mobile companion bridge.'}
                   </dd>
                 </div>
               </dl>
